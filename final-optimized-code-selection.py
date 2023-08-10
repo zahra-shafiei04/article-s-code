@@ -7,6 +7,8 @@ import time
 #%%
 start_time = time.time()
 
+#test
+
 def Wright_Fisher_model(N, p0, generations, mu, v):
     
     allele_frequencies = []
