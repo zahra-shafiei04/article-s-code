@@ -38,8 +38,8 @@ v_values = [1e-2]
 
 #%%
 #saving proccess:
-a = 10000
-batch_size = 1000
+a = 1000000
+batch_size = 100000
 num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
