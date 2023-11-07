@@ -182,21 +182,3 @@ end_time = time.time()
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
 
-#%%
-#genetic varation:
-from scipy import integrate
-
-#function D is representing genetic diversity:  
-def D(sorted_bin_averages,sorted_all_normalized_counts):
-    
-    D1 = [2 * sorted_bin_averages[i] * (1 - sorted_bin_averages)[i] * sorted_all_normalized_counts[i] for i in range(len(sorted_all_normalized_counts))]
-    
-    return D1
-
-result = D(sorted_bin_averages,sorted_all_normalized_counts)
-
-result, error = integrate.quad(D, 0, 1)
-
-print("Result:", result)
-print("Error:", error)
-
