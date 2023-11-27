@@ -16,8 +16,8 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a):
     for jj in range(generations):
         
         # Describing mutations all over the simulation and fluctuating selection:
-        s = np.random.normal(0, np.sqrt(v), a) #s = sigma
-        t = np.random.normal(0, np.sqrt(v), a) #t = tau
+        s = np.random.normal(ms , np.sqrt(v), a) #s = sigma
+        t = np.random.normal(mt , np.sqrt(v), a) #t = tau
 
         # Update 'p' using the given equations, based on the previous value of 'p':
         p = p + mu * (1 - p) +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
@@ -26,6 +26,10 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a):
         allele_counts = np.random.binomial(2 * N, p)
         p = allele_counts / (2. * N)
         
+        #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
+        # if (p == 0) and (np.random.rand() <= mu * 2 * N):
+        #     p = 1 / N
+        # elif    
         p[(p==1)]=0
         
     return p 
@@ -36,6 +40,8 @@ p0 = 0.01
 generations = 10 * N
 mu = 1 / (10 * N)
 v_values = [1e-5, 1e-2]  
+ms = -0.15
+mt = -0.15
 
 #%%
 #saving proccess:
@@ -172,6 +178,40 @@ plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
 plt.title('SFS Fluctuating Selection & Normalized Analytical Solution')
 plt.legend()
+plt.show()
+
+#%%
+#evaluating genetic variation:
+a = 10**5
+batch_size = 10**4
+num_batches = a // batch_size
+ 
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_values = []
+
+color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+for i, v in enumerate(v_values):
+    
+    color = color_cycle[i % len(color_cycle)]
+
+    # Loop through each batch
+    for batch in range(num_batches):
+        # Load data from the batch file
+        V = loaded_data = np.loadtxt(f"{output_directory}\\final_frequencies_batch{batch}_v{v}.txt", delimiter=',')
+
+    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+    
+    print(f"GV for v = {v}: {GV}")
+    
+    GV_values.append(GV)
+    
+plt.plot(v_values, GV_values,marker ='o')
+plt.xlabel('v')
+plt.ylabel('GV')
+plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
+plt.grid(True)
 plt.show()
 
 #%%
