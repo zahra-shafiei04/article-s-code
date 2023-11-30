@@ -9,39 +9,44 @@ import scipy
 #defining the function: 
 start_time = time.time()
 
-def Wright_Fisher_model(N, p0, generations, mu, v, a):
-    
+def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
+   
     p = np.full(a , p0)
     
     for jj in range(generations):
         
-        # Describing mutations all over the simulation and fluctuating selection:
+        # describing fluctuating selection:
+    
         s = np.random.normal(ms , np.sqrt(v), a) #s = sigma
         t = np.random.normal(mt , np.sqrt(v), a) #t = tau
 
-        # Update 'p' using the given equations, based on the previous value of 'p':
+        # main equation describing mutation and fluctuating selection:
         p = p + mu * (1 - p) +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
+        
+        #check if selection coefficient is pushing too much, adjust p:    
+        p[(p < 0)] = 0
+        p[(p > 1)] = 1
         
         # Describing drift:
         allele_counts = np.random.binomial(2 * N, p)
         p = allele_counts / (2. * N)
         
-        #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
-        # if (p == 0) and (np.random.rand() <= mu * 2 * N):
-        #     p = 1 / N
-        # elif    
-        p[(p==1)]=0
-        
+        p[(p == 1)] = 0
+
     return p 
 
-
+#initial value for describing phenomenon:
 N = 1000
 p0 = 0.01
 generations = 10 * N
 mu = 1 / (10 * N)
+
+#initial value to decribe flactuating selection:
 v_values = [1e-5, 1e-2]  
-ms = -0.15
-mt = -0.15
+x = 0.01
+ms_values = [-x, -x/2, 0]
+mt_values = [0, x/2, x]
+
 
 #%%
 #saving proccess:
@@ -51,18 +56,27 @@ num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-for batch in range(num_batches):
+for i, v in enumerate(v_values):
     
-    batch_a = [Wright_Fisher_model(N, p0, generations, mu, v, a) for v in v_values]
-
-    for i, v in enumerate(v_values):
+    for j in range(len(ms_values)):
+       
+        for batch in range(num_batches):
+             
+            ms_val = ms_values[j]
+            mt_val = mt_values[j]
+                        
+            s = np.random.normal(ms_val, np.sqrt(v), a)  # s = sigma
+            t = np.random.normal(mt_val, np.sqrt(v), a)  # t = tau
+    
+            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, s, t, x)
         
-        output_filename = f"{output_directory}\\final_frequencies_batch{batch}_v{v}.txt"
+            output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt"
         
-        np.savetxt(output_filename, batch_a[i], delimiter=',', fmt='%f')
-
+            np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
+     
 #%%
 #defining the analytical solution function:
+    
 def r1(B):
     return (1 - (np.sqrt(1 + (4 / B))))/ 2
 
@@ -89,67 +103,63 @@ a = 10**5
 batch_size = 10**4
 num_batches = a // batch_size
 
-plt.figure()
-
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
-    color = color_cycle[i % len(color_cycle)]
-    
-# Loop through each batch
-    for batch in range(num_batches):
+    for j in range(len(ms_values)):
         
-        # Load data from the batch file
-        loaded_data = np.loadtxt(f"{output_directory}\\final_frequencies_batch{batch}_v{v}.txt", delimiter=',')
+        color = color_cycle[j % len(color_cycle)]
+        
+        ms_val = ms_values[j]
+        mt_val = mt_values[j]
+        
+        for batch in range(num_batches):
+        
+            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
 
-        # Define bin edges and compute the histogram
+            # Define bin edges and compute the histogram:
+                
+            bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
+    
+            counts, bins = np.histogram(loaded_data, bins=bin_width)
+    
+            bin_centers = (bins[:-1] + bins[1:]) / 2
+    
+            riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
+    
+            normalized_counts = counts / riemann_sum
+    
+            plt.plot(bin_centers, normalized_counts, color=color)
+
+
+        # Initialize an empty array to collect allele frequency data from all batches
+        all_data = []
+
+        for batch in range(num_batches):
+        
+            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+    
+            all_data.append(loaded_data)
+
+        all_data = np.concatenate(all_data)
+
+        # Create a histogram of the combined data:
+            
         bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
-    
-        counts, bins = np.histogram(loaded_data, bins=bin_width)
-    
+
+        counts, bins = np.histogram(all_data, bins=bin_width)
+
         bin_centers = (bins[:-1] + bins[1:]) / 2
-    
+
         riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
-    
-        normalized_counts = counts / riemann_sum
-    
-        plt.plot(bin_centers, normalized_counts , label=f'Batch { batch + 1}', color=color)
 
+        all_normalized_counts = counts / riemann_sum
 
-    # Initialize an empty array to collect allele frequency data from all batches
-    all_data = []
+        print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
 
-    # Loop through each batch
-    for batch in range(num_batches):
-        
-        # Load data from the batch file 
-        loaded_data = np.loadtxt(f"{output_directory}\\final_frequencies_batch{batch}_v{v}.txt", delimiter=',')
-    
-        # Append the data to the all_data array
-        all_data.append(loaded_data)
+        plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms_val}_mt={mt_val}', color=color)
 
-    # Concatenate all data from different batches into a single array
-    all_data = np.concatenate(all_data)
-
-    # Create a histogram of the combined data
-
-    bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
-
-    counts, bins = np.histogram(all_data, bins=bin_width)
-
-    bin_centers = (bins[:-1] + bins[1:]) / 2
-
-    riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
-
-    all_normalized_counts = counts / riemann_sum
-
-    print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
-
-    # Plot the combined histogram as a single curve 
-    plt.plot(bin_centers, all_normalized_counts, marker='o' , label='all Data', color=color)
-
-# Show the plot with both curves
 plt.legend()
 plt.xlabel("Frequency")
 plt.ylabel("Normalized Counts")
@@ -159,21 +169,26 @@ plt.show()
 
 #plotting analytical answer:
 for i, v in enumerate(v_values):
+
+    for j in range(len(ms_values)):
+        
+        color = color_cycle[j % len(color_cycle)]
+        
+        ms_val = ms_values[j]
+        mt_val = mt_values[j]         
+      
+        B = 2 * N * 2 * v
     
-    color = color_cycle[i % len(color_cycle)]
+        f1_values = f1(bin_centers, B)  
     
-    B = 2 * N * 2 * v
+        riemann_sum_analytical = np.sum(f1_values * (bin_centers[1] - bin_centers[0]))
     
-    f1_values = f1(bin_centers, B)  
+        normalized_curve = f1_values / riemann_sum_analytical
     
-    riemann_sum_analytical = np.sum(f1_values * (bin_centers[1] - bin_centers[0]))
+        print(f"Area under analytical solution curve for v={v}_ms={ms_val}_mt={mt_val}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-    normalized_curve = f1_values / riemann_sum_analytical
-    
-    print(f"Area under analytical solution curve for v={v}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
-    
-    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}',color=color)
-    
+        plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms_val}_mt={mt_val}',color=color)
+
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
 plt.title('SFS Fluctuating Selection & Normalized Analytical Solution')
@@ -188,29 +203,41 @@ num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-GV_values = []
-
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
     color = color_cycle[i % len(color_cycle)]
+    
+    GV_values = []
+    
+    for j in range(len(ms_values)):
+        
+        
+        ms_val = ms_values[j]
+        mt_val = mt_values[j] 
 
     # Loop through each batch
-    for batch in range(num_batches):
+        for batch in range(num_batches):
         # Load data from the batch file
-        V = loaded_data = np.loadtxt(f"{output_directory}\\final_frequencies_batch{batch}_v{v}.txt", delimiter=',')
+            V = loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
 
-    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+        GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
     
-    print(f"GV for v = {v}: {GV}")
+        print(f"GV for v = {v}_ms={ms_val}_mt={mt_val}: {GV}")
     
-    GV_values.append(GV)
+        GV_values.append(GV)
     
-plt.plot(v_values, GV_values,marker ='o')
+    plt.scatter(ms_values, GV_values,marker ='o',label =f'v={v}',color = color )
+    
+    # Add text annotations next to each point
+    for ms_val, mt_val, GV_val in zip(ms_values, mt_values, GV_values):
+        plt.text(ms_val, GV_val, f'ms={ms_val}\nmt={mt_val}', color=color, ha='right', va='bottom')
+
 plt.xlabel('v')
 plt.ylabel('GV')
 plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
+plt.legend()
 plt.grid(True)
 plt.show()
 
