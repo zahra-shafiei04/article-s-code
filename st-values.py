@@ -75,8 +75,9 @@ for i, v in enumerate(v_values):
         
             np.savetxt(output_filename, st_values , delimiter=',', fmt='%f')
 
+
 #%%
-# Plot histograms for each value of v and coresponding (ms,mt):
+# Plot histograms for each value of v and corresponding (ms, mt):
 output_directory = r"C:\Users\Zahra\research codes-st value"
 
 a = 10**5
@@ -94,27 +95,24 @@ for i, v in enumerate(v_values):
         ms_val = ms_values[j]
         mt_val = mt_values[j]
         
-        color = color_cycle[j % len(color_cycle)]
-   
-        plt.figure(j+1)
-    
-        all_st_values  = []
+        all_st_values = []
     
         for batch in range(num_batches):
-        
+            
             # Load data from the batch file
-            loaded_data = np.loadtxt( f"{output_directory}\\all_st_values_batch{batch}_v{v}.txt", delimiter=',')
+            loaded_data = np.loadtxt(f"{output_directory}\\st_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
         
             all_st_values.append(loaded_data)
         
         all_st_values = np.concatenate(all_st_values)
     
+        plt.figure(figsize=(8, 6))
         plt.hist(all_st_values, bins=100)
         plt.xlabel('Selection Coefficient')
         plt.ylabel('Counts')
         plt.title(f'Histogram of Selection Coefficient (v = {v}_ms={ms_val}_mt={mt_val})')
     
-        #calculate S.D. for each selection coefficient
+        # Calculate S.D. for each selection coefficient
         std_deviation = np.std(all_st_values)
         mean = np.mean(all_st_values)
     
@@ -124,9 +122,10 @@ for i, v in enumerate(v_values):
         plt.text(mean, plt.ylim()[1]*0.9, f'Mean = {mean:.4f}', color='red', ha='center')
   
         print(f"Standard Deviation of Selection Coefficients for v={v}_ms={ms_val}_mt={mt_val}: {std_deviation}")
-        print(f"mean of Selection Coefficients for v={v}_ms={ms_val}_mt={mt_val}: {std_deviation}")
-
-    plt.show()
+        print(f"Mean of Selection Coefficients for v={v}_ms={ms_val}_mt={mt_val}: {mean}")
+        
+        plt.show()  
+        
 
 #%%
 # Record the end time
@@ -135,9 +134,5 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
-
-
-
-
 
 
