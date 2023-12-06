@@ -42,10 +42,10 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = [1e-5, 1e-2]  
+v_values = [0, 1e-5]  
 x = 0.01
-ms_values = [-x, -x/2, 0]
-mt_values = [0, x/2, x]
+ms_values = [-x/2]
+mt_values = [x/2]
 
 
 #%%
@@ -107,10 +107,10 @@ color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
+    color = color_cycle[i % len(color_cycle)]
+        
     for j in range(len(ms_values)):
-        
-        color = color_cycle[j % len(color_cycle)]
-        
+               
         ms_val = ms_values[j]
         mt_val = mt_values[j]
         
@@ -166,7 +166,7 @@ plt.ylabel("Normalized Counts")
 plt.title("Normalized Frequency Distribution")
 plt.show()
 
-
+#%%
 #plotting analytical answer:
 for i, v in enumerate(v_values):
 
@@ -203,41 +203,29 @@ num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
+GV_values = []
+
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
     color = color_cycle[i % len(color_cycle)]
-    
-    GV_values = []
-    
-    for j in range(len(ms_values)):
-        
-        
-        ms_val = ms_values[j]
-        mt_val = mt_values[j] 
 
     # Loop through each batch
-        for batch in range(num_batches):
+    for batch in range(num_batches):
         # Load data from the batch file
-            V = loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+        V = loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
 
-        GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
     
-        print(f"GV for v = {v}_ms={ms_val}_mt={mt_val}: {GV}")
+    print(f"GV for v = {v}: {GV}")
     
-        GV_values.append(GV)
+    GV_values.append(GV)
     
-    plt.scatter(ms_values, GV_values,marker ='o',label =f'v={v}',color = color )
-    
-    # Add text annotations next to each point
-    for ms_val, mt_val, GV_val in zip(ms_values, mt_values, GV_values):
-        plt.text(ms_val, GV_val, f'ms={ms_val}\nmt={mt_val}', color=color, ha='right', va='bottom')
-
+plt.plot(v_values, GV_values,marker ='o')
 plt.xlabel('v')
 plt.ylabel('GV')
 plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
-plt.legend()
 plt.grid(True)
 plt.show()
 

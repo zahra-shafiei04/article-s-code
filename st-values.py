@@ -44,10 +44,10 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 # initial value to decribe flactuating selection:
-v_values = [1e-5, 1e-2]  
+v_values = [0 , 1e-5]  
 x = 0.01
-ms_values = [-x, -x/2, 0]
-mt_values = [0, x/2, x]
+ms_values = [-x/2]
+mt_values = [ x/2]
 
 #%%
 #saving proccess:
@@ -120,7 +120,10 @@ for i, v in enumerate(v_values):
     
         # Add a text label for the mean value
         plt.text(mean, plt.ylim()[1]*0.9, f'Mean = {mean:.4f}', color='red', ha='center')
-  
+        
+        # Add a text label for the standard deviation value
+        plt.text(mean, plt.ylim()[1]*0.85, f'Standard Deviation = {std_deviation:.4f}', color='green', ha='center')
+
         print(f"Standard Deviation of Selection Coefficients for v={v}_ms={ms_val}_mt={mt_val}: {std_deviation}")
         print(f"Mean of Selection Coefficients for v={v}_ms={ms_val}_mt={mt_val}: {mean}")
         
