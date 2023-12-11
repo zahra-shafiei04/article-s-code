@@ -31,7 +31,7 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         p = allele_counts / (2. * N)
                        
         #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
-        if np.any(p == 0) and (np.random.rand() <= mu * 2 * N):
+        if np.any(p == 0) and (np.random.rand(10 * N) <= mu * 2 * N):
             p[(p == 0)] = 1 / N
             
         p[(p == 1)] = 0
@@ -202,7 +202,7 @@ plt.show()
 a = 10**5
 batch_size = 10**4
 num_batches = a // batch_size
- 
+
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
 GV_values = []
@@ -212,23 +212,34 @@ plt.figure()
 
 for i, v in enumerate(v_values):
     
-    color = color_cycle[i % len(color_cycle)]
+    GV_values_b = []  
+    
+    for j in range(len(ms_values)):
+        
+        for batch in range(num_batches):
+            
+            ms_val = ms_values[j]
+            mt_val = mt_values[j]
 
-    # Loop through each batch
-    for batch in range(num_batches):
-        # Load data from the batch file
-        V = loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+
+            GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+            print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
+            GV_values_b.append(GV_b)
+            plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
+
+   
+    color = color_cycle[i % len(color_cycle)]
+    plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
 
     GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-    
     print(f"GV for v = {v}: {GV}")
-    
     GV_values.append(GV)
-    
-    # Annotate the point with its v_value
     plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
 
-plt.plot(v_values, GV_values,marker ='o')
+
+plt.scatter(v_values, GV_values, marker='o', color='black')
+
 plt.xlabel('v')
 plt.ylabel('GV')
 plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
