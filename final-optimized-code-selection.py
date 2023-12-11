@@ -13,15 +13,14 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
    
     p = np.full(a , p0)
     
-    for jj in range(generations):
+    for i in range(generations):
         
         # describing fluctuating selection:
-    
         s = np.random.normal(ms , np.sqrt(v), a) #s = sigma
         t = np.random.normal(mt , np.sqrt(v), a) #t = tau
 
-        # main equation describing mutation and fluctuating selection:
-        p = p + mu * (1 - p) +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
+        # main equation describing fluctuating selection:
+        p = p +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
         
         #check if selection coefficient is pushing too much, adjust p:    
         p[(p < 0)] = 0
@@ -30,7 +29,11 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         # Describing drift:
         allele_counts = np.random.binomial(2 * N, p)
         p = allele_counts / (2. * N)
-        
+                       
+        #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
+        if np.any(p == 0) and (np.random.rand() <= mu * 2 * N):
+            p[(p == 0)] = 1 / N
+            
         p[(p == 1)] = 0
 
     return p 
@@ -42,11 +45,10 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = [0, 1e-5]  
+v_values = [1e-20, 1e-5]  
 x = 0.01
 ms_values = [-x/2]
 mt_values = [x/2]
-
 
 #%%
 #saving proccess:
@@ -166,13 +168,13 @@ plt.ylabel("Normalized Counts")
 plt.title("Normalized Frequency Distribution")
 plt.show()
 
-#%%
+
 #plotting analytical answer:
 for i, v in enumerate(v_values):
-
+ 
+    color = color_cycle[i % len(color_cycle)]
+    
     for j in range(len(ms_values)):
-        
-        color = color_cycle[j % len(color_cycle)]
         
         ms_val = ms_values[j]
         mt_val = mt_values[j]         
@@ -206,6 +208,7 @@ output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 GV_values = []
 
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+plt.figure()
 
 for i, v in enumerate(v_values):
     
@@ -222,6 +225,9 @@ for i, v in enumerate(v_values):
     
     GV_values.append(GV)
     
+    # Annotate the point with its v_value
+    plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
+
 plt.plot(v_values, GV_values,marker ='o')
 plt.xlabel('v')
 plt.ylabel('GV')

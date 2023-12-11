@@ -23,7 +23,7 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         st = (s - t) / (1 + (p * s) + (t * (1 - p)))
         
         # main equation describing mutation and fluctuating selection:
-        p = p + mu * (1 - p) +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
+        p = p +  (p * (1 - p) * (s - t)) / (1 + (p * s) + (t * (1 - p)))
         
         # check if selection coefficient is pushing too much, adjust p:    
         p[(p < 0)] = 0
@@ -33,6 +33,10 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         allele_counts = np.random.binomial(2 * N, p)
         p = allele_counts / (2. * N)
         
+        #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
+        if np.any(p == 0) and (np.random.rand() <= mu * 2 * N):
+            p[(p == 0)] = 1 / N
+            
         p[(p == 1)] = 0
 
     return st 
@@ -44,7 +48,7 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 # initial value to decribe flactuating selection:
-v_values = [0 , 1e-5]  
+v_values = [1e-20 , 1e-5]  
 x = 0.01
 ms_values = [-x/2]
 mt_values = [ x/2]
