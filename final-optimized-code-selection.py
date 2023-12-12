@@ -45,7 +45,7 @@ mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
 v_values = [1e-20, 1e-5]  
-x = 0 #switch off the bias to check if we can match theory and simulation
+x = 0.01
 ms_values = [-x/2]
 mt_values = [x/2]
 
@@ -252,7 +252,3 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
-
-for idx in range(len(p)):
-    if p[idx] == 0 and np.random.rand() <= mu * 2 * N:
-        p[idx] = 1 / N
