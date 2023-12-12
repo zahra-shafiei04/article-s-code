@@ -31,7 +31,7 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         p = allele_counts / (2. * N)
                        
         #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
-        if np.any(p == 0) and (np.random.rand(10 * N) <= mu * 2 * N):
+        if np.any(p == 0) and (np.any(np.random.rand(10 * N) <= mu * 2 * N)):
             p[(p == 0)] = 1 / N
             
         p[(p == 1)] = 0
@@ -254,3 +254,6 @@ end_time = time.time()
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
 
+for idx in range(len(p)):
+    if p[idx] == 0 and np.random.rand() <= mu * 2 * N:
+        p[idx] = 1 / N
