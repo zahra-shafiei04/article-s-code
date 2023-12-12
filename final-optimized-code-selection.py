@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random as random
 import time
-import scipy
 
 #%%
 #defining the function: 
@@ -31,9 +30,9 @@ def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
         p = allele_counts / (2. * N)
                        
         #checking if frequency hits the boundry (0) and if a mutation is happening with rate mu:
-        if np.any(p == 0) and (np.any(np.random.rand(10 * N) <= mu * 2 * N)):
-            p[(p == 0)] = 1 / N
-            
+        mutation_condition = (p == 0) & (np.random.rand(a) <= mu * 2 * N)
+        p[mutation_condition] = 1 / N
+         
         p[(p == 1)] = 0
 
     return p 
@@ -46,7 +45,7 @@ mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
 v_values = [1e-20, 1e-5]  
-x = 0.01
+x = 0 #switch off the bias to check if we can match theory and simulation
 ms_values = [-x/2]
 mt_values = [x/2]
 
