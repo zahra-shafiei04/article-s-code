@@ -44,40 +44,42 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = [1e-20, 1e-5]  
-x = 0.01
-ms_values = [-x/2]
-mt_values = [x/2]
+v_values = np.linspace(0 , 2e-5 , 20) 
+x = 0
+ms = [-x/2]
+mt = [x/2]
 
 #%%
 #saving proccess:
-a = 10**5
-batch_size = 10**4
+a = 10**4
+batch_size = 10**3
 num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
 for i, v in enumerate(v_values):
     
-    for j in range(len(ms_values)):
+    # for j in range(len(ms_values)):
        
         for batch in range(num_batches):
              
-            ms_val = ms_values[j]
-            mt_val = mt_values[j]
+            # ms_val = ms_values[j]
+            # mt_val = mt_values[j]
                         
-            s = np.random.normal(ms_val, np.sqrt(v), a)  # s = sigma
-            t = np.random.normal(mt_val, np.sqrt(v), a)  # t = tau
-    
-            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, s, t, x)
+            # s = np.random.normal(ms_val, np.sqrt(v), a)  # s = sigma
+            # t = np.random.normal(mt_val, np.sqrt(v), a)  # t = tau
+            #batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, s, t, x)
+            
+            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x)
         
-            output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt"
+            output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt"
         
             np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
      
 #%%
-#defining the analytical solution function:
-    
+#defining the analytical solution function: 
+
+v_values = np.linspace(0 , 1e-2 , 10) 
 def r1(B):
     return (1 - (np.sqrt(1 + (4 / B))))/ 2
 
@@ -100,24 +102,24 @@ def f1(y, B):
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-a = 10**5
-batch_size = 10**4
+a = 10**4
+batch_size = 10**3
 num_batches = a // batch_size
 
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
-    color = color_cycle[i % len(color_cycle)]
+        color = color_cycle[i % len(color_cycle)]
         
-    for j in range(len(ms_values)):
+    # for j in range(len(ms_values)):
                
-        ms_val = ms_values[j]
-        mt_val = mt_values[j]
+    #     ms_val = ms_values[j]
+    #     mt_val = mt_values[j]
         
         for batch in range(num_batches):
         
-            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
 
             # Define bin edges and compute the histogram:
                 
@@ -139,7 +141,7 @@ for i, v in enumerate(v_values):
 
         for batch in range(num_batches):
         
-            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
     
             all_data.append(loaded_data)
 
@@ -159,7 +161,7 @@ for i, v in enumerate(v_values):
 
         print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
 
-        plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms_val}_mt={mt_val}', color=color)
+        plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms}_mt={mt}', color=color)
 
 plt.legend()
 plt.xlabel("Frequency")
@@ -171,12 +173,12 @@ plt.show()
 #plotting analytical answer:
 for i, v in enumerate(v_values):
  
-    color = color_cycle[i % len(color_cycle)]
+        color = color_cycle[i % len(color_cycle)]
     
-    for j in range(len(ms_values)):
+    # for j in range(len(ms_values)):
         
-        ms_val = ms_values[j]
-        mt_val = mt_values[j]         
+    #     ms_val = ms_values[j]
+    #     mt_val = mt_values[j]         
       
         B = 2 * N * 2 * v
     
@@ -186,9 +188,9 @@ for i, v in enumerate(v_values):
     
         normalized_curve = f1_values / riemann_sum_analytical
     
-        print(f"Area under analytical solution curve for v={v}_ms={ms_val}_mt={mt_val}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
+        print(f"Area under analytical solution curve for v={v}_ms={ms}_mt={mt}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-        plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms_val}_mt={mt_val}',color=color)
+        plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms}_mt={mt}',color=color)
 
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
@@ -198,8 +200,8 @@ plt.show()
 
 #%%
 #evaluating genetic variation:
-a = 10**5
-batch_size = 10**4
+a = 10**4
+batch_size = 10**3
 num_batches = a // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
@@ -211,30 +213,30 @@ plt.figure()
 
 for i, v in enumerate(v_values):
     
-    GV_values_b = []  
+         GV_values_b = []  
     
-    for j in range(len(ms_values)):
+     # for j in range(len(ms_values)):
         
-        for batch in range(num_batches):
+         for batch in range(num_batches):
             
-            ms_val = ms_values[j]
-            mt_val = mt_values[j]
+            # ms_val = ms_values[j]
+             # mt_val = mt_values[j]
 
-            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms_val}_mt={mt_val}.txt", delimiter=',')
+             V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
 
-            GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-            print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
-            GV_values_b.append(GV_b)
-            plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
+             GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+             print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
+             GV_values_b.append(GV_b)
+             plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
 
    
-    color = color_cycle[i % len(color_cycle)]
-    plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
+         color = color_cycle[i % len(color_cycle)]
+         plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
 
-    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-    print(f"GV for v = {v}: {GV}")
-    GV_values.append(GV)
-    plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
+         GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+         print(f"GV for v = {v}: {GV}")
+         GV_values.append(GV)
+         plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
 
 
 plt.scatter(v_values, GV_values, marker='o', color='black')
