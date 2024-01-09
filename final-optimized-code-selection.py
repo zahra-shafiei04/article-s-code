@@ -44,8 +44,8 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(0 , 2e-5 , 20) 
-x = 0
+v_values = [1e-20, 1e-5] 
+x = 0.01
 ms = [-x/2]
 mt = [x/2]
 
@@ -58,28 +58,17 @@ num_batches = a // batch_size
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
 for i, v in enumerate(v_values):
-    
-    # for j in range(len(ms_values)):
        
-        for batch in range(num_batches):
-             
-            # ms_val = ms_values[j]
-            # mt_val = mt_values[j]
-                        
-            # s = np.random.normal(ms_val, np.sqrt(v), a)  # s = sigma
-            # t = np.random.normal(mt_val, np.sqrt(v), a)  # t = tau
-            #batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, s, t, x)
+    for batch in range(num_batches):
             
-            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x)
+        batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x)
         
-            output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt"
+        output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt"
         
-            np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
+        np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
      
 #%%
 #defining the analytical solution function: 
-
-v_values = np.linspace(0 , 1e-2 , 10) 
 def r1(B):
     return (1 - (np.sqrt(1 + (4 / B))))/ 2
 
@@ -97,11 +86,7 @@ def f1(y, B):
 
 #%%
 #plotting process:
-#back up directory for huge data set, number of trajectories) 1e6 : 
-# output_directory = r"C:\Users\Zahra\research codes_max trajectories"
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
+output_directory =  r"C:\Users\Zahra\research codes -  fluctuating selection"
 a = 10**4
 batch_size = 10**3
 num_batches = a // batch_size
@@ -110,58 +95,57 @@ color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
     
-        color = color_cycle[i % len(color_cycle)]
+    color = color_cycle[i % len(color_cycle)]
         
-    # for j in range(len(ms_values)):
-               
-    #     ms_val = ms_values[j]
-    #     mt_val = mt_values[j]
+    for batch in range(num_batches):
         
-        for batch in range(num_batches):
-        
-            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
+        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
 
-            # Define bin edges and compute the histogram:
-                
-            bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
-    
-            counts, bins = np.histogram(loaded_data, bins=bin_width)
-    
-            bin_centers = (bins[:-1] + bins[1:]) / 2
-    
-            riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
-    
-            normalized_counts = counts / riemann_sum
-    
-            plt.plot(bin_centers, normalized_counts, color=color)
-
-
-        # Initialize an empty array to collect allele frequency data from all batches
-        all_data = []
-
-        for batch in range(num_batches):
-        
-            loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
-    
-            all_data.append(loaded_data)
-
-        all_data = np.concatenate(all_data)
-
-        # Create a histogram of the combined data:
-            
+        # Define bin edges and compute the histogram:
         bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
-
-        counts, bins = np.histogram(all_data, bins=bin_width)
-
+    
+        counts, bins = np.histogram(loaded_data, bins=bin_width)
+    
         bin_centers = (bins[:-1] + bins[1:]) / 2
-
+    
         riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
+    
+        normalized_counts = counts / riemann_sum
+    
+        plt.plot(bin_centers, normalized_counts, color=color)
+        
+#%%
+color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-        all_normalized_counts = counts / riemann_sum
+for i, v in enumerate(v_values):
+    
+    color = color_cycle[i % len(color_cycle)]
+    
+    # Initialize an empty array to collect allele frequency data from all batches for each v:
+    all_data = []
 
-        print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
+    for batch in range(num_batches):
+        
+        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
+    
+        all_data.append(loaded_data)
 
-        plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms}_mt={mt}', color=color)
+    all_data = np.concatenate(all_data)
+
+    # Create a histogram of the combined data:      
+    bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
+
+    counts, bins = np.histogram(all_data, bins=bin_width)
+
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+
+    riemann_sum = np.sum(counts * (bin_centers[1] - bin_centers[0]))
+
+    all_normalized_counts = counts / riemann_sum
+
+    print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
+
+    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms}_mt={mt}', color=color)
 
 plt.legend()
 plt.xlabel("Frequency")
@@ -173,24 +157,19 @@ plt.show()
 #plotting analytical answer:
 for i, v in enumerate(v_values):
  
-        color = color_cycle[i % len(color_cycle)]
-    
-    # for j in range(len(ms_values)):
-        
-    #     ms_val = ms_values[j]
-    #     mt_val = mt_values[j]         
+    color = color_cycle[i % len(color_cycle)]
       
-        B = 2 * N * 2 * v
+    B = 2 * N * 2 * v
     
-        f1_values = f1(bin_centers, B)  
+    f1_values = f1(bin_centers, B)  
     
-        riemann_sum_analytical = np.sum(f1_values * (bin_centers[1] - bin_centers[0]))
+    riemann_sum_analytical = np.sum(f1_values * (bin_centers[1] - bin_centers[0]))
     
-        normalized_curve = f1_values / riemann_sum_analytical
+    normalized_curve = f1_values / riemann_sum_analytical
     
-        print(f"Area under analytical solution curve for v={v}_ms={ms}_mt={mt}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
+    print(f"Area under analytical solution curve for v={v}_ms={ms}_mt={mt}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-        plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms}_mt={mt}',color=color)
+    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms}_mt={mt}',color=color)
 
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
@@ -211,34 +190,26 @@ GV_values = []
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 plt.figure()
 
-for i, v in enumerate(v_values):
-    
-         GV_values_b = []  
-    
-     # for j in range(len(ms_values)):
+for i, v in enumerate(v_values):    
+    GV_values_b = []  
         
-         for batch in range(num_batches):
-            
-            # ms_val = ms_values[j]
-             # mt_val = mt_values[j]
+    for batch in range(num_batches):
+  
+        V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
 
-             V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
-
-             GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-             print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
-             GV_values_b.append(GV_b)
-             plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
+        GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+        print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
+        GV_values_b.append(GV_b)
+        plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
 
    
-         color = color_cycle[i % len(color_cycle)]
-         plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
+    color = color_cycle[i % len(color_cycle)]
+    plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
 
-         GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-         print(f"GV for v = {v}: {GV}")
-         GV_values.append(GV)
-         plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
-
-
+    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+    print(f"GV for v = {v}: {GV}")
+    GV_values.append(GV)
+    plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
 plt.scatter(v_values, GV_values, marker='o', color='black')
 
 plt.xlabel('v')
