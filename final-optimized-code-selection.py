@@ -44,8 +44,8 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(4e-4, 1e-2, 2)
-b_values = np.linspace(2e-3, 2e-2, 2)
+v_values = np.linspace(4e-4, 1e-2, 5)
+b_values = np.linspace(2e-3, 2e-2, 5)
 
 #%%
 #initial value to decribe flactuating selection:
@@ -233,7 +233,12 @@ print("Total running time:", running_time, "seconds")
 
 #%%
 #Matrix to store results for vectorized bias and selective fluctuation:
-    
+a = 10**4
+batch_size = 10**3
+num_batches = a // batch_size
+ 
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
 result_matrix = np.zeros((len(v_values), len(b_values)))
 
 for i, v in enumerate(v_values):
