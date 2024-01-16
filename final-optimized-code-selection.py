@@ -8,7 +8,7 @@ import time
 #defining the function: 
 start_time = time.time()
 
-def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x):
+def Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b):
    
     p = np.full(a , p0)
     
@@ -44,12 +44,16 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = [1e-20, 1e-5] 
-x = 0.01
-ms = [-x/2]
-mt = [x/2]
+v_values = np.linspace(4e-4, 1e-2, 2)
+b_values = np.linspace(2e-3, 2e-2, 2)
 
 #%%
+#initial value to decribe flactuating selection:
+v_values = [1e-20, 1e-5] #or v_values = np.linspace(4e-4, 1e-2, 2)
+b = 0.01
+ms = [-b/2]
+mt = [b/2]
+
 #saving proccess:
 a = 10**4
 batch_size = 10**3
@@ -61,12 +65,12 @@ for i, v in enumerate(v_values):
        
     for batch in range(num_batches):
             
-        batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, x)
+        batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b)
         
-        output_filename = f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt"
+        output_filename = f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt"
         
         np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
-     
+        
 #%%
 #defining the analytical solution function: 
 def r1(B):
@@ -99,7 +103,7 @@ for i, v in enumerate(v_values):
         
     for batch in range(num_batches):
         
-        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
+        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
 
         # Define bin edges and compute the histogram:
         bin_width = np.linspace(((1 / N) + (1 /(2 * N))), 1, 101)
@@ -114,7 +118,7 @@ for i, v in enumerate(v_values):
     
         plt.plot(bin_centers, normalized_counts, color=color)
         
-#%%
+
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
@@ -126,7 +130,7 @@ for i, v in enumerate(v_values):
 
     for batch in range(num_batches):
         
-        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
+        loaded_data = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
     
         all_data.append(loaded_data)
 
@@ -145,7 +149,7 @@ for i, v in enumerate(v_values):
 
     print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
 
-    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_ms={ms}_mt={mt}', color=color)
+    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_v={v}_b={b}', color=color)
 
 plt.legend()
 plt.xlabel("Frequency")
@@ -167,9 +171,9 @@ for i, v in enumerate(v_values):
     
     normalized_curve = f1_values / riemann_sum_analytical
     
-    print(f"Area under analytical solution curve for v={v}_ms={ms}_mt={mt}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
+    print(f"Area under analytical solution curve for v={v}_b={b}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_ms={ms}_mt={mt}',color=color)
+    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical v={v}_b={b}',color=color)
 
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
@@ -218,6 +222,7 @@ plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
 plt.grid(True)
 plt.show()
 
+
 #%%
 # Record the end time
 end_time = time.time()
@@ -225,3 +230,114 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
+
+#%%
+#Matrix to store results for vectorized bias and selective fluctuation:
+    
+result_matrix = np.zeros((len(v_values), len(b_values)))
+
+for i, v in enumerate(v_values):
+    
+    for j, b in enumerate(b_values):
+        
+        ms = [-b/2]
+        mt = [b/2]
+        
+        for batch in range(num_batches):
+                
+            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b)
+            
+            output_filename = f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt"
+            
+            np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
+
+
+#%%
+#evaluating genetic variation for the mean of all batches with vectorized bias and selective fluctuation:
+a = 10**4
+batch_size = 10**3
+num_batches = a // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_matrix = np.zeros((len(v_values), len(b_values)))
+
+for i, v in enumerate(v_values):
+
+    for j, b in enumerate(b_values):
+        
+        GV_values_b = []
+        
+        for batch in range(num_batches):
+  
+            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
+            
+            GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+            
+            GV_values_b.append(GV_b)
+        
+        # Calculate the average GV for the current combination of v and b:
+        GV_matrix[i, j] = np.mean(GV_values_b)
+
+# Plotting the heatmap:
+plt.imshow(GV_matrix, extent=[min(b_values), max(b_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
+plt.colorbar(label='Genetic Variation (GV)')
+plt.xlabel('b values')
+plt.ylabel('v values')
+plt.title('Genetic Variation')
+plt.show()
+
+#%%
+#evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:
+a = 10**4
+batch_size = 10**3
+num_batches = a // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_values = np.zeros((len(v_values), len(b_values)))
+
+# Loop over v values:
+for i, v in enumerate(v_values):
+    
+    # Loop over b values:
+    for j, b in enumerate(b_values):
+        
+        all_data = []
+
+        for batch in range(num_batches):
+        
+            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
+    
+            all_data.append(V)
+
+        all_data = np.concatenate(all_data)
+ 
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+       
+        print(f"GV for v = {v}: {GV}")
+ 
+        GV_values[i, j] = GV
+
+# Plotting the heatmap:
+plt.imshow(GV_values, extent=[min(b_values), max(b_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
+plt.colorbar(label='Genetic Variation (GV)')
+plt.xlabel('b values')
+plt.ylabel('v values')
+plt.title('Genetic Variation')
+plt.show()
+
+#%%
+# Record the end time
+end_time = time.time()
+
+# Calculate the total running time
+running_time = end_time - start_time
+print("Total running time:", running_time, "seconds")
+
+
+
+
+
+
+
