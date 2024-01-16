@@ -239,8 +239,6 @@ num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-result_matrix = np.zeros((len(v_values), len(b_values)))
-
 for i, v in enumerate(v_values):
     
     for j, b in enumerate(b_values):
