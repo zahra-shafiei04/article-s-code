@@ -44,8 +44,8 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(4e-4, 1e-2, 5)
-b_values = np.linspace(2e-3, 2e-2, 5)
+v_values = np.linspace(0, 1e-3, 10)
+b_values = np.linspace(0, 1e-3, 10)
 
 #%%
 #initial value to decribe flactuating selection:
@@ -234,7 +234,7 @@ print("Total running time:", running_time, "seconds")
 #%%
 #Matrix to store results for vectorized bias and selective fluctuation:
 a = 10**4
-batch_size = 10**3
+batch_size = 10**4
 num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
@@ -254,11 +254,10 @@ for i, v in enumerate(v_values):
             
             np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
 
-
 #%%
 #evaluating genetic variation for the mean of all batches with vectorized bias and selective fluctuation:
 a = 10**4
-batch_size = 10**3
+batch_size = 10**4
 num_batches = a // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
@@ -293,7 +292,7 @@ plt.show()
 #%%
 #evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:
 a = 10**4
-batch_size = 10**3
+batch_size = 10**4
 num_batches = a // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
@@ -337,8 +336,6 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
-
-
 
 
 
