@@ -208,7 +208,7 @@ for i, v in enumerate(v_values):
  
         GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
        
-        print(f"GV for v = {v}: {GV}")
+        print(f"GV for v = {v}- b = {b} : {GV}")
  
         GV_values[i, j] = GV
 
@@ -220,29 +220,6 @@ plt.ylabel('v values')
 plt.title('Genetic Variation')
 plt.show()
 
-#%%
-#create a 3D plot for GV
-from mpl_toolkits.mplot3d import Axes3D
-
-# Create 3D plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Create a meshgrid for v_values and b_values
-V, B = np.meshgrid(v_values, b_values)
-
-# Plot the 3D surface
-surface = ax.plot_surface(B, V, GV_values, cmap='viridis')
-
-fig.colorbar(surface, ax=ax, label='Genetic Variation (GV)')
-
-ax.set_xlabel('b values')
-ax.set_ylabel('v values')
-ax.set_zlabel('Genetic Variation (GV)')
-ax.set_title('Genetic Variation in 3D')
-
-# Show the plot
-plt.show()
 
 #%%
 #evaluating genetic variation in one dimension to check b = 0 case:
