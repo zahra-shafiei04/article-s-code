@@ -44,7 +44,7 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(1e-2, 1e-1, 10)
+v_values = np.linspace(0, 1e-1, 10)
 #b_values = np.linspace(0, 2e-3, 10)
 b_values = [0]
 
@@ -182,7 +182,51 @@ plt.legend()
 plt.show()
 
 #%%
-#evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:
+#evaluating genetic variation for aggregated data old method:
+a = 10**4
+batch_size = 10**4
+num_batches = a // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_values = np.zeros((len(v_values), len(b_values)))
+
+# Loop over v values:
+for i, v in enumerate(v_values):
+    
+    for j, b in enumerate(b_values):
+
+        GV_values_batch = []  
+        
+        for batch in range(num_batches):
+  
+            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
+
+            GV_batch = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+        
+            print(f"GV for v = {v} _ batch = {batch}: {GV_batch}")
+        
+            GV_values_batch.append(GV_batch)
+        
+            plt.text(v, GV_batch, f'{batch}', fontsize=8, ha='right', va='bottom')
+
+        GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+        
+        print(f"GV for v = {v}: {GV}")
+   
+    GV_values[i, j] = GV
+
+# Plotting the heatmap:
+plt.imshow(GV_values, extent=[min(b_values), max(b_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
+plt.colorbar(label='Genetic Variation (GV)')
+plt.xlabel('b values')
+plt.ylabel('v values')
+plt.title('Genetic Variation')
+plt.show()
+
+#%%
+#evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:(sumerized)
+#the output of this and privious one is same:
 a = 10**4
 batch_size = 10**4
 num_batches = a // batch_size
@@ -221,14 +265,6 @@ plt.title('Genetic Variation')
 plt.show()
 
 #%%
-# Record the end time
-end_time = time.time()
-
-# Calculate the total running time
-running_time = end_time - start_time
-print("Total running time:", running_time, "seconds")
-
-#%%
 #create a 3D plot for GV
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -254,4 +290,52 @@ ax.set_title('Genetic Variation in 3D')
 # Show the plot
 plt.show()
 
+#%%
+#evaluating genetic variation in one dimension to check b = 0 case:
+a = 10**4
+batch_size = 10**4
+num_batches = a // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_values = []
+
+color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+plt.figure()
+
+for i, v in enumerate(v_values):    
+    GV_values_b = []  
+        
+    for batch in range(num_batches):
+  
+        V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
+
+        GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+        print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
+        GV_values_b.append(GV_b)
+        plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
+
+   
+    # color = color_cycle[i % len(color_cycle)]
+    # plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
+
+    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
+    print(f"GV for v = {v}: {GV}")
+    GV_values.append(GV)
+    plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
+plt.scatter(v_values, GV_values, marker='o', color='black')
+
+plt.xlabel('v')
+plt.ylabel('GV')
+plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
+plt.grid(True)
+plt.show()
+
+#%%
+# Record the end time
+end_time = time.time()
+
+# Calculate the total running time
+running_time = end_time - start_time
+print("Total running time:", running_time, "seconds")
 
