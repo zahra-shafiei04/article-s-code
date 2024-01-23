@@ -182,51 +182,7 @@ plt.legend()
 plt.show()
 
 #%%
-#evaluating genetic variation for aggregated data old method:
-a = 10**4
-batch_size = 10**4
-num_batches = a // batch_size
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-GV_values = np.zeros((len(v_values), len(b_values)))
-
-# Loop over v values:
-for i, v in enumerate(v_values):
-    
-    for j, b in enumerate(b_values):
-
-        GV_values_batch = []  
-        
-        for batch in range(num_batches):
-  
-            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
-
-            GV_batch = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-        
-            print(f"GV for v = {v} _ batch = {batch}: {GV_batch}")
-        
-            GV_values_batch.append(GV_batch)
-        
-            plt.text(v, GV_batch, f'{batch}', fontsize=8, ha='right', va='bottom')
-
-        GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-        
-        print(f"GV for v = {v}: {GV}")
-   
-    GV_values[i, j] = GV
-
-# Plotting the heatmap:
-plt.imshow(GV_values, extent=[min(b_values), max(b_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
-plt.colorbar(label='Genetic Variation (GV)')
-plt.xlabel('b values')
-plt.ylabel('v values')
-plt.title('Genetic Variation')
-plt.show()
-
-#%%
-#evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:(sumerized)
-#the output of this and privious one is same:
+#evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:
 a = 10**4
 batch_size = 10**4
 num_batches = a // batch_size
@@ -278,10 +234,8 @@ V, B = np.meshgrid(v_values, b_values)
 # Plot the 3D surface
 surface = ax.plot_surface(B, V, GV_values, cmap='viridis')
 
-# Add color bar
 fig.colorbar(surface, ax=ax, label='Genetic Variation (GV)')
 
-# Set labels
 ax.set_xlabel('b values')
 ax.set_ylabel('v values')
 ax.set_zlabel('Genetic Variation (GV)')
@@ -316,8 +270,8 @@ for i, v in enumerate(v_values):
         plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
 
    
-    # color = color_cycle[i % len(color_cycle)]
-    # plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
+    color = color_cycle[i % len(color_cycle)]
+    plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
 
     GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
     print(f"GV for v = {v}: {GV}")
