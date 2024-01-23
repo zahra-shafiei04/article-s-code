@@ -44,9 +44,9 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(0, 1e-1, 10)
-#b_values = np.linspace(0, 2e-3, 10)
-b_values = [0]
+v_values = np.linspace(0, 1e-2, 10)
+b_values = np.linspace(0, 3e-3, 15)
+# b_values = [0]
 
 #%%
 #Matrix to store results for vectorized bias and selective fluctuation:
