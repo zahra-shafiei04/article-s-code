@@ -44,33 +44,32 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-v_values = np.linspace(0, 1e-3, 10)
-b_values = np.linspace(0, 1e-3, 10)
+v_values = np.linspace(0, 1e-2, 10)
+b_values = np.linspace(0, 2e-3, 10)
 
 #%%
-#initial value to decribe flactuating selection:
-v_values = [1e-20, 1e-5] #or v_values = np.linspace(4e-4, 1e-2, 2)
-b = 0.01
-ms = [-b/2]
-mt = [b/2]
-
-#saving proccess:
+#Matrix to store results for vectorized bias and selective fluctuation:
 a = 10**4
-batch_size = 10**3
+batch_size = 10**4
 num_batches = a // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
 for i, v in enumerate(v_values):
-       
-    for batch in range(num_batches):
+    
+    for j, b in enumerate(b_values):
+        
+        ms = [-b/2]
+        mt = [b/2]
+        
+        for batch in range(num_batches):
+                
+            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b)
             
-        batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b)
-        
-        output_filename = f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt"
-        
-        np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
-        
+            output_filename = f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt"
+            
+            np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
+
 #%%
 #defining the analytical solution function: 
 def r1(B):
@@ -92,7 +91,7 @@ def f1(y, B):
 #plotting process:
 output_directory =  r"C:\Users\Zahra\research codes -  fluctuating selection"
 a = 10**4
-batch_size = 10**3
+batch_size = 10**4
 num_batches = a // batch_size
 
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -118,7 +117,7 @@ for i, v in enumerate(v_values):
     
         plt.plot(bin_centers, normalized_counts, color=color)
         
-
+#%%
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 for i, v in enumerate(v_values):
@@ -182,114 +181,6 @@ plt.legend()
 plt.show()
 
 #%%
-#evaluating genetic variation:
-a = 10**4
-batch_size = 10**3
-num_batches = a // batch_size
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-GV_values = []
-
-color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
-plt.figure()
-
-for i, v in enumerate(v_values):    
-    GV_values_b = []  
-        
-    for batch in range(num_batches):
-  
-        V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_ms={ms}_mt={mt}.txt", delimiter=',')
-
-        GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-        print(f"GV for v = {v} _ batch = {batch}: {GV_b}")
-        GV_values_b.append(GV_b)
-        plt.text(v, GV_b, f'{batch}', fontsize=8, ha='right', va='bottom')
-
-   
-    color = color_cycle[i % len(color_cycle)]
-    plt.scatter([v] * len(GV_values_b), GV_values_b, marker='o', color=color)
-
-    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-    print(f"GV for v = {v}: {GV}")
-    GV_values.append(GV)
-    plt.text(v, GV, f'{v:.2e}', fontsize=8, ha='right', va='bottom')
-plt.scatter(v_values, GV_values, marker='o', color='black')
-
-plt.xlabel('v')
-plt.ylabel('GV')
-plt.title('Genetic Variation (GV) vs. Fluctuating Selection (v)')
-plt.grid(True)
-plt.show()
-
-
-#%%
-# Record the end time
-end_time = time.time()
-
-# Calculate the total running time
-running_time = end_time - start_time
-print("Total running time:", running_time, "seconds")
-
-#%%
-#Matrix to store results for vectorized bias and selective fluctuation:
-a = 10**4
-batch_size = 10**4
-num_batches = a // batch_size
- 
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-for i, v in enumerate(v_values):
-    
-    for j, b in enumerate(b_values):
-        
-        ms = [-b/2]
-        mt = [b/2]
-        
-        for batch in range(num_batches):
-                
-            batch_a = Wright_Fisher_model(N, p0, generations, mu, v, a, ms, mt, b)
-            
-            output_filename = f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt"
-            
-            np.savetxt(output_filename, batch_a, delimiter=',', fmt='%f')
-
-#%%
-#evaluating genetic variation for the mean of all batches with vectorized bias and selective fluctuation:
-a = 10**4
-batch_size = 10**4
-num_batches = a // batch_size
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-GV_matrix = np.zeros((len(v_values), len(b_values)))
-
-for i, v in enumerate(v_values):
-
-    for j, b in enumerate(b_values):
-        
-        GV_values_b = []
-        
-        for batch in range(num_batches):
-  
-            V = np.loadtxt(f"{output_directory}\\p_b{batch}_v={v}_b={b}.txt", delimiter=',')
-            
-            GV_b = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-            
-            GV_values_b.append(GV_b)
-        
-        # Calculate the average GV for the current combination of v and b:
-        GV_matrix[i, j] = np.mean(GV_values_b)
-
-# Plotting the heatmap:
-plt.imshow(GV_matrix, extent=[min(b_values), max(b_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
-plt.colorbar(label='Genetic Variation (GV)')
-plt.xlabel('b values')
-plt.ylabel('v values')
-plt.title('Genetic Variation')
-plt.show()
-
-#%%
 #evaluating genetic variation for aggregated data with vectorized bias and selective fluctuation:
 a = 10**4
 batch_size = 10**4
@@ -337,7 +228,30 @@ end_time = time.time()
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
 
+#%%
+#create a 3D plot for GV
+from mpl_toolkits.mplot3d import Axes3D
 
+# Create 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
+# Create a meshgrid for v_values and b_values
+V, B = np.meshgrid(v_values, b_values)
+
+# Plot the 3D surface
+surface = ax.plot_surface(B, V, GV_values, cmap='viridis')
+
+# Add color bar
+fig.colorbar(surface, ax=ax, label='Genetic Variation (GV)')
+
+# Set labels
+ax.set_xlabel('b values')
+ax.set_ylabel('v values')
+ax.set_zlabel('Genetic Variation (GV)')
+ax.set_title('Genetic Variation in 3D')
+
+# Show the plot
+plt.show()
 
 
