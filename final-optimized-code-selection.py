@@ -8,15 +8,15 @@ import time
 #defining the function: 
 start_time = time.time()
 
-def Wright_Fisher_model(N, x0, generations, mu, fluctuation, length_x , mean_σ, mean_τ, bias):
+def Wright_Fisher_model(N, x0, generations, mu, v, length_x , mean_σ, mean_τ, δ):
     
     x = np.full(length_x , x0)
     
     for i in range(generations):
         
         # describing parameters for fluctuating selection:
-        σ = np.random.normal(mean_σ , np.sqrt(fluctuation), length_x) 
-        τ = np.random.normal(mean_τ , np.sqrt(fluctuation), length_x) 
+        σ = np.random.normal(mean_σ , np.sqrt(v), length_x) 
+        τ = np.random.normal(mean_τ , np.sqrt(v), length_x) 
 
         # main equation describing fluctuating selection:
         x = x +  (x * (1 - x) * (σ - τ)) / (1 + (x * σ) + (τ * (1 - x)))
@@ -44,32 +44,38 @@ generations = 10 * N
 mu = 1 / (10 * N)
 
 #initial value to decribe flactuating selection:
-fluctuation_values = np.linspace(0, 1e-1, 20)
-bias_values = np.linspace(0, 3e-3, 20)
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+
+for j, δ in enumerate(δ_values):
+    
+    mean_σ = [-δ/2]
+    mean_τ = [δ/2]
 
 #In case of simulating article's claim:
-#bias_values = [0]
+#δ_values = [0]
 
 #%%
-#Matrix to store results for vectorized bias and selective fluctuation:
+#Matrix to store results for vectorized bias = δ and selective fluctuation = v:
 length_x = 10**4
 batch_size = 10**4
 num_batches = length_x // batch_size
  
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-for i, fluctuation in enumerate(fluctuation_values):
+for i, v in enumerate(v_values):
     
-    for j, bias in enumerate(bias_values):
+    for j, δ in enumerate(δ_values):
         
-        mean_σ = [-bias/2]
-        mean_τ = [bias/2]
+        mean_σ = [-δ/2]
+        mean_τ = [δ/2]
         
         for batch in range(num_batches):
                 
-            batch_length_x = Wright_Fisher_model(N, x0, generations, mu, fluctuation, length_x, mean_σ, mean_τ, bias)
+            batch_length_x = Wright_Fisher_model(N, x0, generations, mu, v, length_x, mean_σ, mean_τ, δ)
             
-            output_filename = f"{output_directory}\\x_batch{batch}_fluctuation={fluctuation}_bias={bias}.txt"
+            output_filename = f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt"
             
             np.savetxt(output_filename, batch_length_x, delimiter=',', fmt='%f')
 
@@ -99,13 +105,13 @@ num_batches = length_x // batch_size
 
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-for i, fluctuation in enumerate(fluctuation_values):
+for i, v in enumerate(v_values):
     
     color = color_cycle[i % len(color_cycle)]
         
     for batch in range(num_batches):
         
-        loaded_data = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={fluctuation}_bias={bias}.txt", delimiter=',')
+        loaded_data = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
 
         # Define bin edges and compute the histogram:
         bin_width = np.linspace((2 / N) , 1, 101)
@@ -127,17 +133,18 @@ batch_size = 10**4
 num_batches = length_x // batch_size
 
 color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+plt.figure()
 
-for i, fluctuation in enumerate(fluctuation_values):
+for i, v in enumerate(v_values):
     
     color = color_cycle[i % len(color_cycle)]
     
-    # Initialize an empty array to collect allele frequency data from all batches for each fluctuation:
+    # Initialize an empty array to collect allele frequency data from all batches for each v:
     all_data = []
 
     for batch in range(num_batches):
         
-        loaded_data = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={fluctuation}_bias={bias}.txt", delimiter=',')
+        loaded_data = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
     
         all_data.append(loaded_data)
 
@@ -156,7 +163,7 @@ for i, fluctuation in enumerate(fluctuation_values):
 
     print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
 
-    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_fluctuation={fluctuation}_bias={bias}', color=color)
+    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_fluctuation={v}_bias={δ}', color=color)
 
 plt.legend()
 plt.xlabel("Frequency")
@@ -166,11 +173,11 @@ plt.show()
 
 
 #plotting analytical answer:
-for i, fluctuation in enumerate(fluctuation_values):
+for i, v in enumerate(v_values):
  
     color = color_cycle[i % len(color_cycle)]
       
-    β = N * 2 * fluctuation
+    β = N * 2 * v
     
     f1_values = f1(bin_centers, β)  
     
@@ -178,9 +185,9 @@ for i, fluctuation in enumerate(fluctuation_values):
     
     normalized_curve = f1_values / riemann_sum_analytical
     
-    print(f"Area under analytical solution curve for fluctuation={fluctuation}_bias={bias}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
+    print(f"Area under analytical solution curve for fluctuation={v}_bias={δ}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical fluctuation={fluctuation}_bias={bias}',color=color)
+    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical fluctuation={v}_bias={δ}',color=color)
 
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
@@ -196,18 +203,18 @@ num_batches = length_x // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-GV_values = np.zeros((len(fluctuation_values), len(bias_values)))
+GV_values = np.zeros((len(v_values), len(δ_values)))
 
 # Loop over fluctuation values:
-for i, fluctuation in enumerate(fluctuation_values):
+for i, v in enumerate(v_values):
     
-    for j, bias in enumerate(bias_values):
+    for j, δ in enumerate(δ_values):
         
         all_data = []
 
         for batch in range(num_batches):
         
-            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={fluctuation}_bias={bias}.txt", delimiter=',')
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
     
             all_data.append(V)
 
@@ -215,58 +222,32 @@ for i, fluctuation in enumerate(fluctuation_values):
  
         GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
        
-        print(f"GV for fluctuation = {fluctuation}- bias = {bias} : {GV}")
+        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
  
         GV_values[i, j] = GV
 
 # Plotting the heatmap:
-plt.imshow(GV_values, extent=[min(bias_values), max(bias_values), min(fluctuation_values), max(fluctuation_values)], aspect='auto', origin='lower')
+plt.imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
 plt.colorbar(label='Genetic Variation (GV)')
 plt.xlabel('bias values')
 plt.ylabel('fluctuation values')
 plt.title('Genetic Variation')
 plt.show()
 
+#between bias and fluctuation:
+v_values = δ_values
 
-#%%
-#evaluating genetic variation in one dimension to check bias = 0 case:
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
+plt.plot(δ_values, v_values , color='white')
 
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+plt.show()
 
-GV_values = []
+#between bias and drift = bias and fluctuation - all together:
+v_values = 1 / ( N * ((1 - (1 / (N * δ_values)))**2))
 
-color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
-plt.figure()
+plt.plot(δ_values, v_values , color='white')
 
-for i, fluctuation in enumerate(fluctuation_values):    
-    GV_values_batch = []  
-        
-    for batch in range(num_batches):
-  
-        V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={fluctuation}_bias={bias}.txt", delimiter=',')
+plt.ylim(0, 0.1)
 
-        GV_batch = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-        print(f"GV for fluctuation = {fluctuation} _ batch = {batch}: {GV_batch}")
-        GV_values_batch.append(GV_batch)
-        plt.text(fluctuation, GV_batch, f'{batch}', fontsize=8, ha='right', va='bottom')
-
-   
-    color = color_cycle[i % len(color_cycle)]
-    plt.scatter([fluctuation] * len(GV_values_batch), GV_values_batch, marker='o', color=color)
-
-    GV = (1 / len(V)) * 2 * np.sum(V * (1 - V))
-    print(f"GV for fluctuation = {fluctuation}: {GV}")
-    GV_values.append(GV)
-    plt.text(fluctuation, GV, f'{fluctuation:.2e}', fontsize=8, ha='right', va='bottom')
-plt.scatter(fluctuation_values, GV_values, marker='o', color='black')
-
-plt.xlabel('fluctuation')
-plt.ylabel('GV')
-plt.title('Genetic Variation (GV) vs. Fluctuating Selection (fluctuation)')
-plt.grid(True)
 plt.show()
 
 #%%
@@ -276,4 +257,357 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
+
+
+#%%
+#equation between bias and drift = drift and fluctuation - all together : 
+    
+#first way:   
+#difference function = a two variable function of v and δ
+#initial value to decribe flactuating selection:
+v_values = np.linspace(0+1e-100, 1e-1, 20)
+δ_values = np.linspace(0+1e-100, 3e-3, 20)
+N = 1000
+
+values = []
+
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        if d == 0 :
+            
+           print("Found d = 0 for (v, δ):", (v, δ))
+           
+           values.append((v, δ))
+           
+        else:
+           print(False)
+           
+#%%
+#second way:
+#difference function if we write v based on δ : (not my favorite)
+v_values = 1 / ((N * (1 - (1 / (N * δ_values)))**2))
+
+plt.plot(δ_values, v_values, color = 'red')
+
+plt.xlabel('δ_values')
+plt.ylabel('v_values')
+plt.show()
+
+#%%
+#3D plot of GV and difference for all values
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+GV_values = np.zeros((len(v_values), len(δ_values)))
+d_values = np.zeros((len(v_values), len(δ_values)))
+
+# Loop over fluctuation values:
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        all_data = []
+        
+        for batch in range(num_batches):
+            
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            all_data.append(V)
+            
+        all_data = np.concatenate(all_data)
+        
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        GV_values[i, j] = GV
+        d_values[i, j] = d
+
+
+# Create 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Create meshgrid for v_values and δ_values
+V, δ = np.meshgrid(v_values, δ_values)
+
+# Plot the 3D surface for GV_values
+surf1 = ax.plot_surface(V, δ, GV_values, cmap='viridis', label='Genetic Variation (GV)')
+
+# Plot the 3D surface for d_values
+surf2 = ax.plot_surface(V, δ, d_values, cmap='plasma', label='d function')
+
+# Add labels and title
+ax.set_xlabel('Fluctuation Values')
+ax.set_ylabel('Bias Values')
+ax.set_zlabel('Values')
+ax.set_title('Genetic Variation and d Function')
+
+# Add color bars
+fig.colorbar(surf1, shrink=0.5, aspect=5, label='Genetic Variation (GV)')
+fig.colorbar(surf2, shrink=0.5, aspect=5, label='d function')
+
+plt.show()
+
+#%%
+#3D plot of GV and difference when 0 < d < 0.1
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+GV_values = np.zeros((len(v_values), len(δ_values)))
+d_values = np.zeros((len(v_values), len(δ_values)))
+
+# Loop over fluctuation values:
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        all_data = []
+        
+        for batch in range(num_batches):
+            
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            all_data.append(V)
+            
+        all_data = np.concatenate(all_data)
+        
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
+        
+        GV_values[i, j] = GV
+        d_values[i, j] = d
+        
+# Masking d values outside the range [0, 0.1]
+masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
+
+# Create 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Create meshgrid for v_values and δ_values
+V, δ = np.meshgrid(v_values, δ_values)
+
+# Plot the 3D surface for GV_values
+surf1 = ax.plot_surface(V, δ, GV_values, cmap='viridis', label='Genetic Variation (GV)')
+
+# Plot the 3D surface for masked_d_values
+surf2 = ax.plot_surface(V, δ, masked_d_values, cmap='plasma', label='d function')
+
+# Add labels and title
+ax.set_xlabel('Fluctuation Values')
+ax.set_ylabel('Bias Values')
+ax.set_zlabel('Values')
+ax.set_title('Genetic Variation and d Function')
+
+# Add color bars
+fig.colorbar(surf1, shrink=0.5, aspect=5, label='Genetic Variation (GV)')
+fig.colorbar(surf2, shrink=0.5, aspect=5, label='d function')
+
+plt.show()
+
+#%%
+import matplotlib.pyplot as plt
+import numpy as np
+
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+GV_values = np.zeros((len(v_values), len(δ_values)))
+d_values = np.zeros((len(v_values), len(δ_values)))
+
+# Loop over fluctuation values:
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        all_data = []
+        
+        for batch in range(num_batches):
+            
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            all_data.append(V)
+            
+        all_data = np.concatenate(all_data)
+        
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        GV_values[i, j] = GV
+        d_values[i, j] = d
+
+# Plotting both heatmaps in one figure
+fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+# Plot heatmap for GV_values
+im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
+axs[0].set_xlabel('Bias Values')
+axs[0].set_ylabel('Fluctuation Values')
+axs[0].set_title('Genetic Variation (GV)')
+plt.colorbar(im1, ax=axs[0], label='Genetic Variation (GV)')
+
+# Plot heatmap for d_values
+im2 = axs[1].imshow(d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
+axs[1].set_xlabel('Bias Values')
+axs[1].set_ylabel('Fluctuation Values')
+axs[1].set_title('d Function')
+plt.colorbar(im2, ax=axs[1], label='d function')
+
+plt.tight_layout()
+plt.show()
+
+
+#%%
+import matplotlib.pyplot as plt
+import numpy as np
+
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+GV_values = np.zeros((len(v_values), len(δ_values)))
+d_values = np.zeros((len(v_values), len(δ_values)))
+
+# Loop over fluctuation values:
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        all_data = []
+        
+        for batch in range(num_batches):
+            
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            all_data.append(V)
+            
+        all_data = np.concatenate(all_data)
+        
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
+        
+        GV_values[i, j] = GV
+        d_values[i, j] = d
+        
+# Masking d values outside the range [0, 0.1]
+masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
+
+# Plotting the heatmaps
+fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+# Plot heatmap for GV_values
+im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='viridis')
+axs[0].set_xlabel('Bias Values')
+axs[0].set_ylabel('Fluctuation Values')
+axs[0].set_title('Genetic Variation (GV)')
+plt.colorbar(im1, ax=axs[0], label='Genetic Variation (GV)')
+
+# Plot heatmap for masked_d_values
+im2 = axs[1].imshow(masked_d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma')
+axs[1].set_xlabel('Bias Values')
+axs[1].set_ylabel('Fluctuation Values')
+axs[1].set_title('d Function (0 < d < 0.1)')
+plt.colorbar(im2, ax=axs[1], label='d function')
+
+plt.tight_layout()
+plt.show()
+
+#%%
+import matplotlib.pyplot as plt
+import numpy as np
+
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+GV_values = np.zeros((len(v_values), len(δ_values)))
+d_values = np.zeros((len(v_values), len(δ_values)))
+
+# Loop over fluctuation values:
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
+        
+        all_data = []
+        
+        for batch in range(num_batches):
+            
+            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            all_data.append(V)
+            
+        all_data = np.concatenate(all_data)
+        
+        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
+        
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        
+        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
+        
+        GV_values[i, j] = GV
+        d_values[i, j] = d
+        
+# Masking d values outside the range [0, 0.1]
+masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
+
+# Plotting the heatmaps on the same plot
+plt.figure(figsize=(10, 6))
+
+# Plot heatmap for GV_values
+plt.imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='viridis')
+plt.colorbar(label='Genetic Variation (GV)')
+
+# Plot heatmap for masked_d_values with alpha value to make it transparent
+plt.imshow(masked_d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma', alpha=0.5)
+plt.colorbar(label='d function')
+
+plt.xlabel('Bias Values')
+plt.ylabel('Fluctuation Values')
+plt.title('Genetic Variation and d Function')
+plt.show()
 
