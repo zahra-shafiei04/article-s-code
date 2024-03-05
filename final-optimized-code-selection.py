@@ -127,6 +127,7 @@ for i, v in enumerate(v_values):
         plt.plot(bin_centers, normalized_counts, color=color)
         
 #%%
+#plotting SFS:
 output_directory =  r"C:\Users\Zahra\research codes -  fluctuating selection"
 length_x = 10**4
 batch_size = 10**4
@@ -222,7 +223,7 @@ for i, v in enumerate(v_values):
  
         GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
        
-        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
+        #print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
  
         GV_values[i, j] = GV
 
@@ -234,22 +235,6 @@ plt.ylabel('fluctuation values')
 plt.title('Genetic Variation')
 plt.show()
 
-#between bias and fluctuation:
-v_values = δ_values
-
-plt.plot(δ_values, v_values , color='white')
-
-plt.show()
-
-#between bias and drift = bias and fluctuation - all together:
-v_values = 1 / ( N * ((1 - (1 / (N * δ_values)))**2))
-
-plt.plot(δ_values, v_values , color='white')
-
-plt.ylim(0, 0.1)
-
-plt.show()
-
 #%%
 # Record the end time
 end_time = time.time()
@@ -257,52 +242,10 @@ end_time = time.time()
 # Calculate the total running time
 running_time = end_time - start_time
 print("Total running time:", running_time, "seconds")
-
-
-#%%
-#equation between bias and drift = drift and fluctuation - all together : 
-    
-#first way:   
-#difference function = a two variable function of v and δ
-#initial value to decribe flactuating selection:
-v_values = np.linspace(0+1e-100, 1e-1, 20)
-δ_values = np.linspace(0+1e-100, 3e-3, 20)
-N = 1000
-
-values = []
-
-for i, v in enumerate(v_values):
-    
-    for j, δ in enumerate(δ_values):
-        
-        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
-        
-        if d == 0 :
-            
-           print("Found d = 0 for (v, δ):", (v, δ))
-           
-           values.append((v, δ))
-           
-        else:
-           print(False)
-           
-#%%
-#second way:
-#difference function if we write v based on δ : (not my favorite)
-v_values = 1 / ((N * (1 - (1 / (N * δ_values)))**2))
-
-plt.plot(δ_values, v_values, color = 'red')
-
-plt.xlabel('δ_values')
-plt.ylabel('v_values')
-plt.show()
+      
 
 #%%
-#3D plot of GV and difference for all values
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-
+#difference function heatmap:
 length_x = 10**4
 batch_size = 10**4
 num_batches = length_x // batch_size
@@ -315,7 +258,7 @@ v_values = np.linspace(0, 1e-1, 20)
 GV_values = np.zeros((len(v_values), len(δ_values)))
 d_values = np.zeros((len(v_values), len(δ_values)))
 
-# Loop over fluctuation values:
+
 for i, v in enumerate(v_values):
     
     for j, δ in enumerate(δ_values):
@@ -333,71 +276,6 @@ for i, v in enumerate(v_values):
         GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
         
         d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
-        
-        GV_values[i, j] = GV
-        d_values[i, j] = d
-
-
-# Create 3D plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Create meshgrid for v_values and δ_values
-V, δ = np.meshgrid(v_values, δ_values)
-
-# Plot the 3D surface for GV_values
-surf1 = ax.plot_surface(V, δ, GV_values, cmap='viridis', label='Genetic Variation (GV)')
-
-# Plot the 3D surface for d_values
-surf2 = ax.plot_surface(V, δ, d_values, cmap='plasma', label='d function')
-
-# Add labels and title
-ax.set_xlabel('Fluctuation Values')
-ax.set_ylabel('Bias Values')
-ax.set_zlabel('Values')
-ax.set_title('Genetic Variation and d Function')
-
-# Add color bars
-fig.colorbar(surf1, shrink=0.5, aspect=5, label='Genetic Variation (GV)')
-fig.colorbar(surf2, shrink=0.5, aspect=5, label='d function')
-
-plt.show()
-
-#%%
-#3D plot of GV and difference when 0 < d < 0.1
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-GV_values = np.zeros((len(v_values), len(δ_values)))
-d_values = np.zeros((len(v_values), len(δ_values)))
-
-# Loop over fluctuation values:
-for i, v in enumerate(v_values):
-    
-    for j, δ in enumerate(δ_values):
-        
-        all_data = []
-        
-        for batch in range(num_batches):
-            
-            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
-            
-            all_data.append(V)
-            
-        all_data = np.concatenate(all_data)
-        
-        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
-        
-        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
-        
-        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
         
         GV_values[i, j] = GV
         d_values[i, j] = d
@@ -405,71 +283,8 @@ for i, v in enumerate(v_values):
 # Masking d values outside the range [0, 0.1]
 masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
 
-# Create 3D plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Create meshgrid for v_values and δ_values
-V, δ = np.meshgrid(v_values, δ_values)
-
-# Plot the 3D surface for GV_values
-surf1 = ax.plot_surface(V, δ, GV_values, cmap='viridis', label='Genetic Variation (GV)')
-
-# Plot the 3D surface for masked_d_values
-surf2 = ax.plot_surface(V, δ, masked_d_values, cmap='plasma', label='d function')
-
-# Add labels and title
-ax.set_xlabel('Fluctuation Values')
-ax.set_ylabel('Bias Values')
-ax.set_zlabel('Values')
-ax.set_title('Genetic Variation and d Function')
-
-# Add color bars
-fig.colorbar(surf1, shrink=0.5, aspect=5, label='Genetic Variation (GV)')
-fig.colorbar(surf2, shrink=0.5, aspect=5, label='d function')
-
-plt.show()
-
-#%%
-import matplotlib.pyplot as plt
-import numpy as np
-
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
-
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-v_values = np.linspace(0, 1e-1, 20)
-δ_values = np.linspace(0, 3e-3, 20)
-
-GV_values = np.zeros((len(v_values), len(δ_values)))
-d_values = np.zeros((len(v_values), len(δ_values)))
-
-# Loop over fluctuation values:
-for i, v in enumerate(v_values):
-    
-    for j, δ in enumerate(δ_values):
-        
-        all_data = []
-        
-        for batch in range(num_batches):
-            
-            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
-            
-            all_data.append(V)
-            
-        all_data = np.concatenate(all_data)
-        
-        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
-        
-        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
-        
-        GV_values[i, j] = GV
-        d_values[i, j] = d
-
-# Plotting both heatmaps in one figure
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+# Plotting all heatmaps in one figure
+fig, axs = plt.subplots(1, 3, figsize=(10 , 5))
 
 # Plot heatmap for GV_values
 im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
@@ -485,14 +300,19 @@ axs[1].set_ylabel('Fluctuation Values')
 axs[1].set_title('d Function')
 plt.colorbar(im2, ax=axs[1], label='d function')
 
+
+# Plot heatmap for masked_d_values
+im3 = axs[2].imshow(masked_d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma')
+axs[2].set_xlabel('Bias Values')
+axs[2].set_ylabel('Fluctuation Values')
+axs[2].set_title('d Function (0 < d < 0.1)')
+plt.colorbar(im2, ax=axs[2], label='d function')
+
 plt.tight_layout()
 plt.show()
 
-
 #%%
-import matplotlib.pyplot as plt
-import numpy as np
-
+#ratio function heatmap:
 length_x = 10**4
 batch_size = 10**4
 num_batches = length_x // batch_size
@@ -503,9 +323,9 @@ v_values = np.linspace(0, 1e-1, 20)
 δ_values = np.linspace(0, 3e-3, 20)
 
 GV_values = np.zeros((len(v_values), len(δ_values)))
-d_values = np.zeros((len(v_values), len(δ_values)))
+r_values = np.zeros((len(v_values), len(δ_values)))
 
-# Loop over fluctuation values:
+
 for i, v in enumerate(v_values):
     
     for j, δ in enumerate(δ_values):
@@ -522,92 +342,100 @@ for i, v in enumerate(v_values):
         
         GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
         
-        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
+        r = (1 / ((N * δ) * (1 - np.sqrt( 1 / (N * v)))))
         
-        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
+        GV_values[i, j] = GV       
+        r_values[i, j] = r
         
-        GV_values[i, j] = GV
-        d_values[i, j] = d
-        
-# Masking d values outside the range [0, 0.1]
-masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
+# Masking r values outside the range [0, 1]
+masked_r_values = np.ma.masked_where((r_values < 0) | (r_values > 1), r_values)
 
-# Plotting the heatmaps
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+# Plotting all heatmaps in one figure
+fig, axs = plt.subplots(1, 3, figsize=(10 , 5))
 
 # Plot heatmap for GV_values
-im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='viridis')
+im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
 axs[0].set_xlabel('Bias Values')
 axs[0].set_ylabel('Fluctuation Values')
 axs[0].set_title('Genetic Variation (GV)')
 plt.colorbar(im1, ax=axs[0], label='Genetic Variation (GV)')
 
-# Plot heatmap for masked_d_values
-im2 = axs[1].imshow(masked_d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma')
+# Plot heatmap for r_values
+im2 = axs[1].imshow(r_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
 axs[1].set_xlabel('Bias Values')
 axs[1].set_ylabel('Fluctuation Values')
-axs[1].set_title('d Function (0 < d < 0.1)')
-plt.colorbar(im2, ax=axs[1], label='d function')
+axs[1].set_title('r Function')
+plt.colorbar(im2, ax=axs[1], label='ratio function')
+
+
+# Plot heatmap for masked_r_values
+im3 = axs[2].imshow(masked_r_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma')
+axs[2].set_xlabel('Bias Values')
+axs[2].set_ylabel('Fluctuation Values')
+axs[2].set_title('r Function (0 < r < 1)')
+plt.colorbar(im2, ax=axs[2], label='ratio function')
 
 plt.tight_layout()
 plt.show()
 
 #%%
-import matplotlib.pyplot as plt
-import numpy as np
+#trying to plot contours for difference 
+v_values = np.linspace(0, 1e-1, 100)
+δ_values = np.linspace(0, 3e-3, 100)
 
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
+Δ, V = np.meshgrid(δ_values, v_values)
 
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-
-v_values = np.linspace(0, 1e-1, 20)
-δ_values = np.linspace(0, 3e-3, 20)
-
-GV_values = np.zeros((len(v_values), len(δ_values)))
 d_values = np.zeros((len(v_values), len(δ_values)))
 
-# Loop over fluctuation values:
 for i, v in enumerate(v_values):
     
     for j, δ in enumerate(δ_values):
         
-        all_data = []
+        d = (1 / (2 * N * δ)) - ((1 - np.sqrt(1 / (N * v))) / 2)
         
-        for batch in range(num_batches):
-            
-            V = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
-            
-            all_data.append(V)
-            
-        all_data = np.concatenate(all_data)
-        
-        GV = (1 / len(all_data)) * 2 * np.sum(all_data * (1 - all_data))
-        
-        d = (1 / (2 * N * δ)) - ((1 - np.sqrt( 1 / (N * v)))/ 2 )
-        
-        print(f"GV for fluctuation = {v}- bias = {δ} : {GV}")
-        
-        GV_values[i, j] = GV
         d_values[i, j] = d
+
+# Contour levels
+levels = [0]
+
+# Plot
+fig, ax = plt.subplots()
+contour = ax.contour(Δ, V, d_values,levels = levels)
+contour = ax.contour(Δ, V, d_values)
+ax.clabel(contour, inline=True, fontsize=8)  
+ax.set_xlabel('δ values')
+ax.set_ylabel('v values')
+plt.title('Contours for Difference')
+
+plt.show()
+
+#%%
+#trying to plot contours for ratio function
+v_values = np.linspace(0, 1e-1, 100)
+δ_values = np.linspace(0, 3e-3, 100)
+
+Δ , V = np.meshgrid(δ_values, v_values)
+
+r_values = np.zeros((len(v_values), len(δ_values)))
+
+for i, v in enumerate(v_values):
+    
+    for j, δ in enumerate(δ_values):
         
-# Masking d values outside the range [0, 0.1]
-masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
+        r = (1 / ((N * δ) * (1 - np.sqrt( 1 / (N * v)))))
+        
+        r_values[i, j] = r
 
-# Plotting the heatmaps on the same plot
-plt.figure(figsize=(10, 6))
+levels = [1]
 
-# Plot heatmap for GV_values
-plt.imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='viridis')
-plt.colorbar(label='Genetic Variation (GV)')
+# Plot
+fig, ax = plt.subplots()
+contour = ax.contour(Δ, V, r_values,levels = levels)
+contour = ax.contour(Δ, V, r_values)
+ax.clabel(contour, inline=True, fontsize = 8)  
+ax.set_xlabel('δ values')
+ax.set_ylabel('v values')
+plt.title('Contours for ratio')
 
-# Plot heatmap for masked_d_values with alpha value to make it transparent
-plt.imshow(masked_d_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma', alpha=0.5)
-plt.colorbar(label='d function')
-
-plt.xlabel('Bias Values')
-plt.ylabel('Fluctuation Values')
-plt.title('Genetic Variation and d Function')
 plt.show()
 
