@@ -347,8 +347,8 @@ for i, v in enumerate(v_values):
         GV_values[i, j] = GV       
         r_values[i, j] = r
         
-# Masking r values outside the range [0, 1]
-masked_r_values = np.ma.masked_where((r_values < 0) | (r_values > 1), r_values)
+# Masking r values outside the range [0, 2]
+masked_r_values = np.ma.masked_where((r_values < 0) | (r_values > 2), r_values)
 
 # Plotting all heatmaps in one figure
 fig, axs = plt.subplots(1, 3, figsize=(10 , 5))
@@ -372,7 +372,7 @@ plt.colorbar(im2, ax=axs[1], label='ratio function')
 im3 = axs[2].imshow(masked_r_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower', cmap='plasma')
 axs[2].set_xlabel('Bias Values')
 axs[2].set_ylabel('Fluctuation Values')
-axs[2].set_title('r Function (0 < r < 1)')
+axs[2].set_title('r Function (0 < r < 2)')
 plt.colorbar(im2, ax=axs[2], label='ratio function')
 
 plt.tight_layout()
@@ -380,8 +380,8 @@ plt.show()
 
 #%%
 #trying to plot contours for difference 
-v_values = np.linspace(0, 1e-1, 100)
-δ_values = np.linspace(0, 3e-3, 100)
+v_values = np.linspace(0+1e-10, 1e-1, 20)
+δ_values = np.linspace(0+1e-10, 3e-3, 20)
 
 Δ, V = np.meshgrid(δ_values, v_values)
 
@@ -396,23 +396,27 @@ for i, v in enumerate(v_values):
         d_values[i, j] = d
 
 # Contour levels
+# levels = np.linspace(np.min(d_values), np.max(d_values), 50)
 levels = [0]
 
 # Plot
 fig, ax = plt.subplots()
 contour = ax.contour(Δ, V, d_values,levels = levels)
-contour = ax.contour(Δ, V, d_values)
 ax.clabel(contour, inline=True, fontsize=8)  
 ax.set_xlabel('δ values')
 ax.set_ylabel('v values')
 plt.title('Contours for Difference')
 
+# Set logarithmic scale for axes
+# plt.xscale('log')
+# plt.yscale('log')
+
 plt.show()
 
 #%%
 #trying to plot contours for ratio function
-v_values = np.linspace(0, 1e-1, 100)
-δ_values = np.linspace(0, 3e-3, 100)
+v_values = np.linspace(0+1e-10, 1e-1, 20)
+δ_values = np.linspace(0+1e-10, 3e-3, 20)
 
 Δ , V = np.meshgrid(δ_values, v_values)
 
@@ -426,16 +430,20 @@ for i, v in enumerate(v_values):
         
         r_values[i, j] = r
 
-levels = [1]
+levels = np.linspace(np.min(r_values), np.max(r_values), 100)
+# levels = [1]
 
 # Plot
 fig, ax = plt.subplots()
 contour = ax.contour(Δ, V, r_values,levels = levels)
-contour = ax.contour(Δ, V, r_values)
 ax.clabel(contour, inline=True, fontsize = 8)  
 ax.set_xlabel('δ values')
 ax.set_ylabel('v values')
 plt.title('Contours for ratio')
+
+# Set logarithmic scale for axes
+plt.xscale('log')
+plt.yscale('log')
 
 plt.show()
 
