@@ -447,3 +447,136 @@ plt.yscale('log')
 
 plt.show()
 
+#%%
+# Defining functions
+# def Φ1(x, δ, v):
+#     return (1/(4 * x * (1 - x))) * ((x/(1 - x))**(-δ/v))
+# Define Φ1 and Φ2 functions
+def Φ1(x, δ, v):
+    if x == 0 or x == 1 or v == 0:
+        return 0  
+    else:
+        return np.log((1/(4 * x * (1 - x))) * ((x/(1 - x))**(-δ/v)))
+
+def Φ2(x, δ, N):
+    return np.log((1/(4 * x * (1 - x))) * (np.exp(N * δ * (-2 * x + 1))))
+
+#%%
+# Initialize lists
+Φ1_values = []
+Φ2_values = []
+all_data = []
+
+# Define parameters
+N = 1000
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+plt.figure()
+for v in v_values:
+    
+    for δ in δ_values:
+        
+        data = []
+        
+        for batch in range(num_batches):
+            
+            X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            filtered_data = X[X >= 0.5]
+            
+            data.extend(filtered_data)  
+            
+        all_data.extend(data)
+        
+# Calculate Φ1 and Φ2 for the filtered data
+Φ1_batch = [Φ1(x, δ, v) for x in all_data]
+Φ1_values.extend(Φ1_batch)
+        
+Φ2_batch = [Φ2(x, δ, N) for x in all_data]
+Φ2_values.extend(Φ2_batch)
+       
+# Plot ln(Φ1) and ln(Φ2) with respect to Data
+plt.scatter(all_data, Φ1_values, label='ln(Φ1)-bias and fluctuation - polynomial', alpha=0.5)
+plt.scatter(all_data, Φ2_values, label='ln(Φ2)-bias and drift - exponential', alpha=0.5)
+plt.xlabel('x')
+plt.ylabel('ln(Φ(x))')
+plt.legend()
+plt.title('ln(Φ1) and ln(Φ2) vs frequency')
+plt.show()
+
+#%%
+# Define only the differences between Φ1 and Φ2 functions
+def Φ1d(x, δ, v):
+    if x == 0 or x == 1 or v == 0:
+        return 0  
+    else:
+        return np.log(((x/(1 - x))**(-δ/v)))
+
+def Φ2d(x, δ, N):
+    return np.log((np.exp(N * δ * (-2 * x + 1))))
+
+#%%
+# Initialize lists
+Φ1d_values = []
+Φ2d_values = []
+all_data = []
+
+# Define parameters
+N = 1000
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+v_values = np.linspace(0, 1e-1, 20)
+δ_values = np.linspace(0, 3e-3, 20)
+
+plt.figure()
+
+for v in v_values:
+    
+    for δ in δ_values:
+        
+        data = []
+        
+        for batch in range(num_batches):
+            
+            X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
+            
+            filtered_data = X[X >= 0.5]
+            
+            data.extend(filtered_data)  
+            
+        all_data.extend(data)
+        
+# Calculate Φ1 and Φ2 for the filtered data
+Φ1d_batch = [Φ1d(x, δ, v) for x in all_data]
+Φ1d_values.extend(Φ1d_batch)
+        
+Φ2d_batch = [Φ2d(x, δ, N) for x in all_data]
+Φ2d_values.extend(Φ2d_batch)
+       
+# Plot ln(Φ1) and ln(Φ2) with respect to Data
+plt.scatter(all_data, Φ1d_values, label='ln(Φ1d)-bias and fluctuation - polynomial', alpha=0.5)
+plt.scatter(all_data, Φ2d_values, label='ln(Φ2d)-bias and drift - exponential', alpha=0.5)
+plt.xlabel('x')
+plt.ylabel('ln(Φ(x))')
+plt.legend()
+plt.title('different part of ln(Φ1) and ln(Φ2) vs frequency')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
