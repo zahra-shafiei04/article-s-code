@@ -465,7 +465,6 @@ def Φ2(x, δ, N):
 # Initialize lists
 Φ1_values = []
 Φ2_values = []
-all_data = []
 
 # Define parameters
 N = 1000
@@ -475,34 +474,19 @@ num_batches = length_x // batch_size
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 v_values = np.linspace(0, 1e-1, 20)
 δ_values = np.linspace(0, 3e-3, 20)
+X = np.linspace(0,0.5, 100)
 
-plt.figure()
-for v in v_values:
-    
-    for δ in δ_values:
-        
-        data = []
-        
-        for batch in range(num_batches):
-            
-            X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
-            
-            filtered_data = X[X <= 0.5]
-            
-            data.extend(filtered_data)  
-            
-        all_data.extend(data)
-        
-# Calculate Φ1 and Φ2 for the filtered data
-Φ1_batch = [Φ1(x, δ, v) for x in all_data]
+#reading the function for given parameters
+Φ1_batch = [Φ1(x, δ, v) for x in X]
 Φ1_values.extend(Φ1_batch)
         
-Φ2_batch = [Φ2(x, δ, N) for x in all_data]
+Φ2_batch = [Φ2(x, δ, N) for x in X]
 Φ2_values.extend(Φ2_batch)
        
 # Plot ln(Φ1) and ln(Φ2) with respect to Data
-plt.scatter(all_data, Φ1_values, label='ln(Φ1)-bias and fluctuation - polynomial', alpha=0.5)
-plt.scatter(all_data, Φ2_values, label='ln(Φ2)-bias and drift - exponential', alpha=0.5)
+plt.figure()
+plt.scatter(X, Φ1_values, label='ln(Φ1)-bias and fluctuation - polynomial')
+plt.scatter(X, Φ2_values, label='ln(Φ2)-bias and drift - exponential')
 plt.xlabel('x')
 plt.ylabel('ln(Φ(x))')
 plt.legend()
@@ -534,35 +518,19 @@ num_batches = length_x // batch_size
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 v_values = np.linspace(0, 1e-1, 20)
 δ_values = np.linspace(0, 3e-3, 20)
+X = np.linspace(0, 0.5, 100)
 
-plt.figure()
-
-for v in v_values:
-    
-    for δ in δ_values:
-        
-        data = []
-        
-        for batch in range(num_batches):
-            
-            X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
-            
-            filtered_data = X[X <= 0.5]
-            
-            data.extend(filtered_data)  
-            
-        all_data.extend(data)
-        
 # Calculate Φ1 and Φ2 for the filtered data
-Φ1d_batch = [Φ1d(x, δ, v) for x in all_data]
+Φ1d_batch = [Φ1d(x, δ, v) for x in X]
 Φ1d_values.extend(Φ1d_batch)
         
-Φ2d_batch = [Φ2d(x, δ, N) for x in all_data]
+Φ2d_batch = [Φ2d(x, δ, N) for x in X]
 Φ2d_values.extend(Φ2d_batch)
        
 # Plot ln(Φ1) and ln(Φ2) with respect to Data
-plt.scatter(all_data, Φ1d_values, label='ln(Φ1d)-bias and fluctuation - polynomial', alpha=0.5)
-plt.scatter(all_data, Φ2d_values, label='ln(Φ2d)-bias and drift - exponential', alpha=0.5)
+plt.figure()
+plt.scatter(X, Φ1d_values, label='ln(Φ1d)-bias and fluctuation - polynomial')
+plt.scatter(X, Φ2d_values, label='ln(Φ2d)-bias and drift - exponential')
 plt.xlabel('x')
 plt.ylabel('ln(Φ(x))')
 plt.legend()
