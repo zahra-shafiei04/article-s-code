@@ -487,7 +487,7 @@ for v in v_values:
             
             X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
             
-            filtered_data = X[X >= 0.5]
+            filtered_data = X[X <= 0.5]
             
             data.extend(filtered_data)  
             
@@ -547,7 +547,7 @@ for v in v_values:
             
             X = np.loadtxt(f"{output_directory}\\x_batch{batch}_fluctuation={v}_bias={δ}.txt", delimiter=',')
             
-            filtered_data = X[X >= 0.5]
+            filtered_data = X[X <= 0.5]
             
             data.extend(filtered_data)  
             
