@@ -164,7 +164,7 @@ for i, v in enumerate(v_values):
 
     print(f"Area under simulation curve {np.sum( all_normalized_counts * (bin_centers[1] - bin_centers[0]))}")
 
-    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'all Data_fluctuation={v}_bias={δ}', color=color)
+    plt.plot(bin_centers, all_normalized_counts, marker='o' , label=f'v={v}_δ={δ}', color=color)
 
 plt.legend()
 plt.xlabel("Frequency")
@@ -186,9 +186,9 @@ for i, v in enumerate(v_values):
     
     normalized_curve = f1_values / riemann_sum_analytical
     
-    print(f"Area under analytical solution curve for fluctuation={v}_bias={δ}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
+    print(f"Area under analytical solution curve for v={v}_δ={δ}:{np.sum(normalized_curve) * (bin_centers[1] - bin_centers[0])}")
     
-    plt.plot(bin_centers, normalized_curve, linestyle='--', label=f'Analytical fluctuation={v}_bias={δ}',color=color)
+    plt.plot(bin_centers, normalized_curve, linestyle='--',color=color)
 
 plt.xlabel('Frequency')
 plt.ylabel('Normalized Counts / Normalized Analytical Values')
@@ -203,6 +203,8 @@ batch_size = 10**4
 num_batches = length_x // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+
+plt.figure(figsize=(12, 8))
 
 GV_values = np.zeros((len(v_values), len(δ_values)))
 
@@ -227,12 +229,31 @@ for i, v in enumerate(v_values):
  
         GV_values[i, j] = GV
 
+
+font_properties = {
+    'family': 'serif',
+    'color': 'black',
+    'weight': 'normal',
+    'size': 30,
+}
+
+plt.rcParams['text.usetex'] = False
+
+
 # Plotting the heatmap:
 plt.imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
-plt.colorbar(label='Genetic Variation (GV)')
-plt.xlabel('bias values')
-plt.ylabel('fluctuation values')
-plt.title('Genetic Variation')
+
+cbar = plt.colorbar()
+cbar.set_label(r'$V_{g}$', fontdict=font_properties)
+cbar.ax.tick_params(labelsize=30)
+
+plt.xlabel( r'$\delta$', fontdict=font_properties)
+plt.ylabel(r'$v$' , fontdict=font_properties)
+plt.title('Genetic Variation ($V_{g}$)' , fontdict=font_properties)
+
+# Set the tick parameters for both axes
+plt.tick_params(axis='both', which='major', labelsize=30, labelcolor='black', direction='in')
+
 plt.show()
 
 #%%
@@ -284,7 +305,7 @@ for i, v in enumerate(v_values):
 masked_d_values = np.ma.masked_where((d_values < 0) | (d_values > 0.1), d_values)
 
 # Plotting all heatmaps in one figure
-fig, axs = plt.subplots(1, 3, figsize=(10 , 5))
+fig, axs = plt.subplots(1, 3, figsize=(12 , 8))
 
 # Plot heatmap for GV_values
 im1 = axs[0].imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
@@ -448,9 +469,6 @@ plt.yscale('log')
 plt.show()
 
 #%%
-# Defining functions
-# def Φ1(x, δ, v):
-#     return (1/(4 * x * (1 - x))) * ((x/(1 - x))**(-δ/v))
 # Define Φ1 and Φ2 functions
 def Φ1(x, δ, v):
     if x == 0 or x == 1 or v == 0:
@@ -508,7 +526,6 @@ def Φ2d(x, δ, N):
 # Initialize lists
 Φ1d_values = []
 Φ2d_values = []
-all_data = []
 
 # Define parameters
 N = 1000
@@ -520,31 +537,31 @@ v_values = np.linspace(0, 1e-1, 20)
 δ_values = np.linspace(0, 3e-3, 20)
 X = np.linspace(0, 0.5, 100)
 
+plt.figure(figsize=(12, 8))
+
+
+font_properties = {
+    'family': 'serif',
+    'color': 'black',
+    'weight': 'normal',
+    'size': 30,
+}
+
 # Calculate Φ1 and Φ2 for the filtered data
 Φ1d_batch = [Φ1d(x, δ, v) for x in X]
 Φ1d_values.extend(Φ1d_batch)
         
 Φ2d_batch = [Φ2d(x, δ, N) for x in X]
 Φ2d_values.extend(Φ2d_batch)
-       
-# Plot ln(Φ1) and ln(Φ2) with respect to Data
-plt.figure()
-plt.scatter(X, Φ1d_values, label='ln(Φ1d)-bias and fluctuation - polynomial')
-plt.scatter(X, Φ2d_values, label='ln(Φ2d)-bias and drift - exponential')
-plt.xlabel('x')
-plt.ylabel('ln(Φ(x))')
-plt.legend()
-plt.title('different part of ln(Φ1) and ln(Φ2) vs frequency')
+
+# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
+plt.plot(X, Φ1d_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1})$ with $\delta$ and $v$', linewidth=4)
+plt.plot(X, Φ2d_values, label=r'Analytical solution $ln(\Phi_{2})$ with $\delta$ and $N$', linewidth=4)
+plt.xlabel(r'($x$)', fontdict=font_properties)
+plt.ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
+plt.legend(prop={'size': 30})
+plt.title(r' Analytical solutions $ln(\Phi_{n})$ vs frequency ($x$)', fontdict=font_properties)
 plt.show()
-
-
-
-
-
-
-
-
-
 
 
 
