@@ -38,7 +38,7 @@ def Wright_Fisher_model(N, x0, generations, mu, v, length_x , mean_σ, mean_τ, 
     return x 
 
 #initial value for describing phenomenon:
-N = 1000
+N = 100
 x0 = 0.01
 generations = 10 * N
 mu = 1 / (10 * N)
@@ -512,33 +512,30 @@ plt.title('ln(Φ1) and ln(Φ2) vs frequency')
 plt.show()
 
 #%%
-# Define only the differences between Φ1 and Φ2 functions
-def Φ1d(x, δ, v):
+# Define only the differences between analytical solution Φ1 and Φ2 functions
+def Φ1(x, δ, v):
+    if x == 0 or x == 1 or v == 0:
+        return 0  
+    else:
+        return (((x/(1 - x))**(-δ/v)))
+
+def Φ2(x, δ, N):
+    return ((np.exp(N * δ * (-2 * x + 1))))
+
+
+# Define analytical solution of ln(Φ1) and ln(Φ2) functions
+def Φ1l(x, δ, v):
     if x == 0 or x == 1 or v == 0:
         return 0  
     else:
         return np.log(((x/(1 - x))**(-δ/v)))
 
-def Φ2d(x, δ, N):
+def Φ2l(x, δ, N):
     return np.log((np.exp(N * δ * (-2 * x + 1))))
 
 #%%
-# Initialize lists
-Φ1d_values = []
-Φ2d_values = []
-
-# Define parameters
-N = 1000
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-v_values = np.linspace(0, 1e-1, 20)
-δ_values = np.linspace(0, 3e-3, 20)
-X = np.linspace(0, 0.5, 100)
-
-plt.figure(figsize=(12, 8))
-
+#plot analytical solutions:
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(16,13))
 
 font_properties = {
     'family': 'serif',
@@ -547,21 +544,61 @@ font_properties = {
     'size': 30,
 }
 
+
+# Initialize lists
+Φ1_values = []
+Φ2_values = []
+
+# Define parameters
+N = 1000
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+δ = 3e-3  
+v = 1e-2
+X = np.linspace(0, 0.5, 100)
+X = [x for x in X if x != 0]
+
 # Calculate Φ1 and Φ2 for the filtered data
-Φ1d_batch = [Φ1d(x, δ, v) for x in X]
-Φ1d_values.extend(Φ1d_batch)
+Φ1_batch = [Φ1(x, δ, v) for x in X]
+Φ1_values.extend(Φ1_batch)
         
-Φ2d_batch = [Φ2d(x, δ, N) for x in X]
-Φ2d_values.extend(Φ2d_batch)
+Φ2_batch = [Φ2(x, δ, N) for x in X]
+Φ2_values.extend(Φ2_batch)
+
 
 # Plot ln(Φ1d) and ln(Φ2d) with respect to Data
-plt.plot(X, Φ1d_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1})$ with $\delta$ and $v$', linewidth=4)
-plt.plot(X, Φ2d_values, label=r'Analytical solution $ln(\Phi_{2})$ with $\delta$ and $N$', linewidth=4)
-plt.xlabel(r'($x$)', fontdict=font_properties)
-plt.ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
-plt.legend(prop={'size': 30})
-plt.title(r' Analytical solutions $ln(\Phi_{n})$ vs frequency ($x$)', fontdict=font_properties)
+ax1.plot(X, Φ1_values[:len(X)], label=r'Analytical solution $\Phi_{1}(x)$ with $\delta$ and $v$', linewidth=4)
+ax1.plot(X, Φ2_values, label=r'Analytical solution $\Phi_{2}(x)$ with $\delta$ and $N$', linewidth=4)
+#ax1.set_xlabel(r'($x$)', fontdict=font_properties)
+ax1.set_ylabel(r'$Φ_{n}(x)$', fontdict=font_properties)
+ax1.legend(prop={'size': 30})
+ax1.set_title(r' Analytical solutions $\Phi_{n}(x)$ vs frequency ($x$)', fontdict=font_properties)
+ax1.tick_params(axis='both', which='major', labelsize=20)
+
+# Initialize lists
+Φ1l_values = []
+Φ2l_values = []
+
+# Calculate Φ1 and Φ2 for the filtered data
+Φ1l_batch = [Φ1l(x, δ, v) for x in X]
+Φ1l_values.extend(Φ1l_batch)
+        
+Φ2l_batch = [Φ2l(x, δ, N) for x in X]
+Φ2l_values.extend(Φ2l_batch)
+
+
+# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
+ax2.plot(X, Φ1l_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1}(x))$ with $\delta$ and $v$', linewidth=4)
+ax2.plot(X, Φ2l_values, label=r'Analytical solution $ln(\Phi_{2}(x))$ with $\delta$ and $N$', linewidth=4)
+ax2.set_xlabel(r'($x$)', fontdict=font_properties)
+ax2.set_ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
+ax2.legend(prop={'size': 30})
+ax2.set_title(r' Analytical solutions $ln(\Phi_{n}(x))$ vs frequency ($x$)', fontdict=font_properties)
+ax2.tick_params(axis='both', which='major', labelsize=20)
+
+# Adjust the space between the subplots
+plt.tight_layout()
+
 plt.show()
-
-
-
