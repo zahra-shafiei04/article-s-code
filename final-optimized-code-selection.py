@@ -473,51 +473,9 @@ plt.yscale('log')
 
 plt.show()
 
-#%%
-# Define Φ1 and Φ2 functions
-def Φ1(x, δ, v):
-    if x == 0 or x == 1 or v == 0:
-        return 0  
-    else:
-        return np.log((1/(4 * x * (1 - x))) * ((x/(1 - x))**(-δ/v)))
-
-def Φ2(x, δ, N):
-    return np.log((1/(4 * x * (1 - x))) * (np.exp(N * δ * (-2 * x + 1))))
 
 #%%
-# Initialize lists
-Φ1_values = []
-Φ2_values = []
-
-# Define parameters
-N = 1000
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-v_values = np.linspace(0, 1e-1, 20)
-δ_values = np.linspace(0, 3e-3, 20)
-X = np.linspace(0,0.5, 100)
-
-#reading the function for given parameters
-Φ1_batch = [Φ1(x, δ, v) for x in X]
-Φ1_values.extend(Φ1_batch)
-        
-Φ2_batch = [Φ2(x, δ, N) for x in X]
-Φ2_values.extend(Φ2_batch)
-       
-# Plot ln(Φ1) and ln(Φ2) with respect to Data
-plt.figure()
-plt.scatter(X, Φ1_values, label='ln(Φ1)-bias and fluctuation - polynomial')
-plt.scatter(X, Φ2_values, label='ln(Φ2)-bias and drift - exponential')
-plt.xlabel('x')
-plt.ylabel('ln(Φ(x))')
-plt.legend()
-plt.title('ln(Φ1) and ln(Φ2) vs frequency')
-plt.show()
-
-#%%
-# Define only the differences between analytical solution Φ1 and Φ2 functions
+# Define analytical solution of Φ1 and Φ2 functions
 def Φ1(x, δ, v):
     if x == 0 or x == 1 or v == 0:
         return 0  
@@ -582,6 +540,8 @@ ax1.legend(prop={'size': 30})
 ax1.set_title(r' Analytical solutions $\Phi_{n}(x)$ vs frequency ($x$)', fontdict=font_properties)
 ax1.tick_params(axis='both', which='major', labelsize=20)
 
+
+
 # Initialize lists
 Φ1l_values = []
 Φ2l_values = []
@@ -597,7 +557,7 @@ ax1.tick_params(axis='both', which='major', labelsize=20)
 # Plot ln(Φ1d) and ln(Φ2d) with respect to Data
 ax2.plot(X, Φ1l_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1}(x))$ with $\delta$ and $v$', linewidth=4)
 ax2.plot(X, Φ2l_values, label=r'Analytical solution $ln(\Phi_{2}(x))$ with $\delta$ and $N$', linewidth=4)
-ax2.set_xlabel(r'$x$', fontdict=font_properties)
+ax2.set_xlabel(r'($x$)', fontdict=font_properties)
 ax2.set_ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
 ax2.legend(prop={'size': 30})
 ax2.set_title(r' Analytical solutions $ln(\Phi_{n}(x))$ vs frequency ($x$)', fontdict=font_properties)
@@ -607,15 +567,3 @@ ax2.tick_params(axis='both', which='major', labelsize=20)
 plt.tight_layout()
 
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
