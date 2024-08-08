@@ -241,18 +241,23 @@ plt.rcParams['text.usetex'] = False
 
 
 # Plotting the heatmap:
+fig, ax = plt.subplots(figsize=(12, 8))
 plt.imshow(GV_values, extent=[min(δ_values), max(δ_values), min(v_values), max(v_values)], aspect='auto', origin='lower')
 
 cbar = plt.colorbar()
 cbar.set_label(r'$V_{g}$', fontdict=font_properties)
 cbar.ax.tick_params(labelsize=30)
 
-plt.xlabel( r'$\delta$', fontdict=font_properties)
-plt.ylabel(r'$v$' , fontdict=font_properties)
+plt.xlabel( r'negative shift ($\delta$)', fontdict=font_properties)
+plt.ylabel(r'selective fluctuation ($v$)' , fontdict=font_properties)
 plt.title('Genetic Variation ($V_{g}$)' , fontdict=font_properties)
 
 # Set the tick parameters for both axes
 plt.tick_params(axis='both', which='major', labelsize=30, labelcolor='black', direction='in')
+
+delta_line = np.linspace(min(δ_values), max(δ_values), 100)
+plt.plot(delta_line, delta_line, 'r', label='$v = \delta$', linewidth=2)
+#plt.legend(fontsize=20, bbox_to_anchor=(1.2, 1), loc='upper left')
 
 plt.show()
 
@@ -592,7 +597,7 @@ ax1.tick_params(axis='both', which='major', labelsize=20)
 # Plot ln(Φ1d) and ln(Φ2d) with respect to Data
 ax2.plot(X, Φ1l_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1}(x))$ with $\delta$ and $v$', linewidth=4)
 ax2.plot(X, Φ2l_values, label=r'Analytical solution $ln(\Phi_{2}(x))$ with $\delta$ and $N$', linewidth=4)
-ax2.set_xlabel(r'($x$)', fontdict=font_properties)
+ax2.set_xlabel(r'$x$', fontdict=font_properties)
 ax2.set_ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
 ax2.legend(prop={'size': 30})
 ax2.set_title(r' Analytical solutions $ln(\Phi_{n}(x))$ vs frequency ($x$)', fontdict=font_properties)
@@ -602,3 +607,15 @@ ax2.tick_params(axis='both', which='major', labelsize=20)
 plt.tight_layout()
 
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
