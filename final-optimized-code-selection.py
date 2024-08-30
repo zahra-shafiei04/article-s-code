@@ -47,14 +47,14 @@ mu = 1 / (10 * N)
 v_values = np.linspace(0, 1e-1, 20)
 δ_values = np.linspace(0, 3e-3, 20)
 
+#In case of simulating article's claim:
+#δ_values = [0]
 
 for j, δ in enumerate(δ_values):
     
     mean_σ = [-δ/2]
     mean_τ = [δ/2]
 
-#In case of simulating article's claim:
-#δ_values = [0]
 
 #%%
 #Matrix to store results for vectorized bias = δ and selective fluctuation = v:
@@ -126,8 +126,7 @@ for i, v in enumerate(v_values):
     
         plt.plot(bin_centers, normalized_counts, color=color)
         
-#%%
-#plotting SFS:
+
 output_directory =  r"C:\Users\Zahra\research codes -  fluctuating selection"
 length_x = 10**4
 batch_size = 10**4
@@ -204,8 +203,6 @@ num_batches = length_x // batch_size
 
 output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
 
-plt.figure(figsize=(12, 8))
-
 GV_values = np.zeros((len(v_values), len(δ_values)))
 
 # Loop over fluctuation values:
@@ -248,8 +245,8 @@ cbar = plt.colorbar()
 cbar.set_label(r'$V_{g}$', fontdict=font_properties)
 cbar.ax.tick_params(labelsize=30)
 
-plt.xlabel( r'negative shift ($\delta$)', fontdict=font_properties)
-plt.ylabel(r'selective fluctuation ($v$)' , fontdict=font_properties)
+plt.xlabel( r'$\delta$', fontdict=font_properties)
+plt.ylabel(r'$v$' , fontdict=font_properties)
 plt.title('Genetic Variation ($V_{g}$)' , fontdict=font_properties)
 
 # Set the tick parameters for both axes
@@ -257,10 +254,103 @@ plt.tick_params(axis='both', which='major', labelsize=30, labelcolor='black', di
 
 delta_line = np.linspace(min(δ_values), max(δ_values), 100)
 plt.plot(delta_line, delta_line, 'r', label='$v = \delta$', linewidth=2)
-#plt.legend(fontsize=20, bbox_to_anchor=(1.2, 1), loc='upper left')
+plt.legend(fontsize=20, bbox_to_anchor=(1.2, 1), loc='upper left')
 
 plt.show()
 
+#%%
+# Define analytical solution of Φ1 and Φ2 functions
+def Φ1(x, δ, v):
+    if x == 0 or x == 1 or v == 0:
+        return 0  
+    else:
+        return (((x/(1 - x))**(-δ/v)))
+
+def Φ2(x, δ, N):
+    return ((np.exp(N * δ * (-2 * x + 1))))
+
+
+# Define analytical solution of ln(Φ1) and ln(Φ2) functions
+def Φ1l(x, δ, v):
+    if x == 0 or x == 1 or v == 0:
+        return 0  
+    else:
+        return np.log(((x/(1 - x))**(-δ/v)))
+
+def Φ2l(x, δ, N):
+    return np.log((np.exp(N * δ * (-2 * x + 1))))
+
+#%%
+#plot analytical solutions:
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(16,13))
+
+font_properties = {
+    'family': 'serif',
+    'color': 'black',
+    'weight': 'normal',
+    'size': 30,
+}
+
+
+# Initialize lists
+Φ1_values = []
+Φ2_values = []
+
+# Define parameters
+N = 1000
+length_x = 10**4
+batch_size = 10**4
+num_batches = length_x // batch_size
+output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
+δ = 3e-3  
+v = 1e-2
+X = np.linspace(0, 0.5, 100)
+X = [x for x in X if x != 0]
+
+# Calculate Φ1 and Φ2 for the filtered data
+Φ1_batch = [Φ1(x, δ, v) for x in X]
+Φ1_values.extend(Φ1_batch)
+        
+Φ2_batch = [Φ2(x, δ, N) for x in X]
+Φ2_values.extend(Φ2_batch)
+
+
+# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
+ax1.plot(X, Φ1_values[:len(X)], label=r'Analytical solution $\Phi_{1}(x)$ with $\delta$ and $v$', linewidth=4)
+ax1.plot(X, Φ2_values, label=r'Analytical solution $\Phi_{2}(x)$ with $\delta$ and $N$', linewidth=4)
+#ax1.set_xlabel(r'($x$)', fontdict=font_properties)
+ax1.set_ylabel(r'$Φ_{n}(x)$', fontdict=font_properties)
+ax1.legend(prop={'size': 30})
+ax1.set_title(r' Analytical solutions $\Phi_{n}(x)$ vs frequency ($x$)', fontdict=font_properties)
+ax1.tick_params(axis='both', which='major', labelsize=20)
+
+
+
+# Initialize lists
+Φ1l_values = []
+Φ2l_values = []
+
+# Calculate Φ1 and Φ2 for the filtered data
+Φ1l_batch = [Φ1l(x, δ, v) for x in X]
+Φ1l_values.extend(Φ1l_batch)
+        
+Φ2l_batch = [Φ2l(x, δ, N) for x in X]
+Φ2l_values.extend(Φ2l_batch)
+
+
+# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
+ax2.plot(X, Φ1l_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1}(x))$ with $\delta$ and $v$', linewidth=4)
+ax2.plot(X, Φ2l_values, label=r'Analytical solution $ln(\Phi_{2}(x))$ with $\delta$ and $N$', linewidth=4)
+ax2.set_xlabel(r'($x$)', fontdict=font_properties)
+ax2.set_ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
+ax2.legend(prop={'size': 30})
+ax2.set_title(r' Analytical solutions $ln(\Phi_{n}(x))$ vs frequency ($x$)', fontdict=font_properties)
+ax2.tick_params(axis='both', which='major', labelsize=20)
+
+# Adjust the space between the subplots
+plt.tight_layout()
+
+plt.show()
 #%%
 # Record the end time
 end_time = time.time()
@@ -271,6 +361,7 @@ print("Total running time:", running_time, "seconds")
       
 
 #%%
+#after this point, codes are related to tests that we have done to check our results.
 #difference function heatmap:
 length_x = 10**4
 batch_size = 10**4
@@ -473,97 +564,3 @@ plt.yscale('log')
 
 plt.show()
 
-
-#%%
-# Define analytical solution of Φ1 and Φ2 functions
-def Φ1(x, δ, v):
-    if x == 0 or x == 1 or v == 0:
-        return 0  
-    else:
-        return (((x/(1 - x))**(-δ/v)))
-
-def Φ2(x, δ, N):
-    return ((np.exp(N * δ * (-2 * x + 1))))
-
-
-# Define analytical solution of ln(Φ1) and ln(Φ2) functions
-def Φ1l(x, δ, v):
-    if x == 0 or x == 1 or v == 0:
-        return 0  
-    else:
-        return np.log(((x/(1 - x))**(-δ/v)))
-
-def Φ2l(x, δ, N):
-    return np.log((np.exp(N * δ * (-2 * x + 1))))
-
-#%%
-#plot analytical solutions:
-fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(16,13))
-
-font_properties = {
-    'family': 'serif',
-    'color': 'black',
-    'weight': 'normal',
-    'size': 30,
-}
-
-
-# Initialize lists
-Φ1_values = []
-Φ2_values = []
-
-# Define parameters
-N = 1000
-length_x = 10**4
-batch_size = 10**4
-num_batches = length_x // batch_size
-output_directory = r"C:\Users\Zahra\research codes -  fluctuating selection"
-δ = 3e-3  
-v = 1e-2
-X = np.linspace(0, 0.5, 100)
-X = [x for x in X if x != 0]
-
-# Calculate Φ1 and Φ2 for the filtered data
-Φ1_batch = [Φ1(x, δ, v) for x in X]
-Φ1_values.extend(Φ1_batch)
-        
-Φ2_batch = [Φ2(x, δ, N) for x in X]
-Φ2_values.extend(Φ2_batch)
-
-
-# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
-ax1.plot(X, Φ1_values[:len(X)], label=r'Analytical solution $\Phi_{1}(x)$ with $\delta$ and $v$', linewidth=4)
-ax1.plot(X, Φ2_values, label=r'Analytical solution $\Phi_{2}(x)$ with $\delta$ and $N$', linewidth=4)
-#ax1.set_xlabel(r'($x$)', fontdict=font_properties)
-ax1.set_ylabel(r'$Φ_{n}(x)$', fontdict=font_properties)
-ax1.legend(prop={'size': 30})
-ax1.set_title(r' Analytical solutions $\Phi_{n}(x)$ vs frequency ($x$)', fontdict=font_properties)
-ax1.tick_params(axis='both', which='major', labelsize=20)
-
-
-
-# Initialize lists
-Φ1l_values = []
-Φ2l_values = []
-
-# Calculate Φ1 and Φ2 for the filtered data
-Φ1l_batch = [Φ1l(x, δ, v) for x in X]
-Φ1l_values.extend(Φ1l_batch)
-        
-Φ2l_batch = [Φ2l(x, δ, N) for x in X]
-Φ2l_values.extend(Φ2l_batch)
-
-
-# Plot ln(Φ1d) and ln(Φ2d) with respect to Data
-ax2.plot(X, Φ1l_values[:len(X)], label=r'Analytical solution $ln(\Phi_{1}(x))$ with $\delta$ and $v$', linewidth=4)
-ax2.plot(X, Φ2l_values, label=r'Analytical solution $ln(\Phi_{2}(x))$ with $\delta$ and $N$', linewidth=4)
-ax2.set_xlabel(r'($x$)', fontdict=font_properties)
-ax2.set_ylabel(r'$ln(Φ_{n}$)', fontdict=font_properties)
-ax2.legend(prop={'size': 30})
-ax2.set_title(r' Analytical solutions $ln(\Phi_{n}(x))$ vs frequency ($x$)', fontdict=font_properties)
-ax2.tick_params(axis='both', which='major', labelsize=20)
-
-# Adjust the space between the subplots
-plt.tight_layout()
-
-plt.show()
